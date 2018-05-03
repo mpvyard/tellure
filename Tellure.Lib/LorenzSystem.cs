@@ -1,35 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Tellure.Lib
+﻿namespace Tellure.Lib
 {
-    class LorenzSystem
+    public struct LorenzSystem
     {
-        private double Sigma { get; set; }
-        private double r { get; set; }
-        private double b { get; set; }
+        private float Sigma { get; set; }
+        private float R { get; set; }
+        private float B { get; set; }
 
-        public LorenzSystem(double sigma, double r, double b)
+        public LorenzSystem(float sigma, float r, float b)
         {
-	        this.Sigma = sigma;
-	        this.r = r;
-	        this.b = b;
+	        Sigma = sigma;
+	        R = r;
+	        B = b;
         }
 
-        public double X(double x, double y)
+        public float X(float x, float y)
         {
 	        return Sigma * (y - x);
         }
 
-        public double Y(double x, double y, double z)
+        public float Y(float x, float y, float z)
         {
-	        return x * (r - z) - y;
+	        return x * (R - z) - y;
         }
 
-        public double Z(double x, double y, double z)
+        public float Z(float x, float y, float z)
         {
-	        return x * y - b * z;
+	        return x * y - B * z;
         }
 	}
 }
