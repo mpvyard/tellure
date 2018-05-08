@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Linq;
 
 namespace Tellure.Lib
@@ -22,6 +23,30 @@ namespace Tellure.Lib
             float range = dataMax - dataMin;
 
             return data.Select(x => 2 * (x - ((dataMin + dataMax) / 2)) / (dataMax - dataMin));
+        }
+
+        public static List<Vector3> Normalize (this List<Vector3> data)
+        {
+            Vector3 dataMax;
+            dataMax = data.First();
+            Vector3 Average = new Vector3(0, 0, 0);
+
+            foreach (Vector3 vect in data)
+            {
+                if (vect.Length() > dataMax.Length())
+                {
+                    dataMax = vect;
+                }
+                Average += vect;
+            }
+            Average = Average / data.Count();
+
+            for (int i = 0; i < data.Count(); ++i)
+            {
+                data[i] = (data[i] - Average) / dataMax.Length();
+            }
+
+            return data;
         }
 
         public static Span<double> Normalize(this Span<double> data)
