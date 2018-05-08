@@ -21,10 +21,14 @@ namespace Tellure.CLI
         public float Step { get; set; }
         [Option('c', Default = 10000, HelpText = "")]
         public int Count { get; set; }
-        [Option("normalize", Default = false, HelpText = "")]
-        public bool Normalize { get; set; }
+
         [Option('o', HelpText = "")]
         public string OutFile { get; set; }
+
+        [Option("normalize", Default = false, HelpText = "")]
+        public bool Normalize { get; set; }
+        [Option("print", Default = true, HelpText = "")]
+        public bool Print { get; set; }
     }
 
     [Verb("normalize", HelpText = "Normalizes sequence that is readed from file, by default output range values would be [-1; 1]")]
@@ -45,7 +49,7 @@ namespace Tellure.CLI
                 .MapResult(
                 (GenerateOptions opts) => generate(opts),
                 (NormalizeOptions opts) => normalize(opts),
-                errs => 1);
+                errs => 1);//TODO: handle errors
 
             int generate(GenerateOptions opts)
             {
@@ -54,10 +58,10 @@ namespace Tellure.CLI
                 var y0 = new Vector3(10, 10, 10);
                 var sequence = generator.Generate(y0, opts.Step, opts.Count);
                 //TODO: work with 3d sequence
-                var sequenceX = sequence.Select(number => number.X);
+                //var sequenceX = sequence.Select(number => number.X);
                 if (opts.Normalize)
                 {
-                    sequenceX = sequenceX.Normalize();
+                    sequence = sequence.Normalize();
                 }
 
                 if(!string.IsNullOrEmpty(opts.OutFile))
@@ -65,10 +69,15 @@ namespace Tellure.CLI
                     //TODO: check for file format and use different formatters
                     using (var writer = new StreamWriter(opts.OutFile))
                     {
-                        ServiceStack.Text.CsvSerializer.SerializeToWriter(sequenceX, writer);
+                        ServiceStack.Text.CsvSerializer.SerializeToWriter(sequence, writer);
                     }
                 }
 
+                if (opts.Print)
+                {
+                    var output = ServiceStack.Text.CsvSerializer.SerializeToString(sequence);
+                    Console.WriteLine(output);
+                }
                 //TODO: add write to MongoDb
                 Console.ReadLine();
                 return 0;
