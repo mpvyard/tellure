@@ -78,7 +78,9 @@ namespace Tellure.CLI
                     Console.WriteLine(output);
                 }
                 //TODO: add write to MongoDb
+                #if DEBUG
                 Console.ReadLine();
+                #endif
                 return 0;
             }
             int normalize(NormalizeOptions opts)

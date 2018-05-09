@@ -34,8 +34,7 @@ namespace Tellure.Lib
 
         private static Vector3 maxVector (this IEnumerable<Vector3> data)
         {
-            Vector3 maxVector;
-            maxVector = data.First();
+            Vector3 maxVector = data.First();
             foreach (Vector3 vect in data)
             {
                 if (vect.Length() > maxVector.Length())
