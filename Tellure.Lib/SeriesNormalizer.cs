@@ -25,30 +25,36 @@ namespace Tellure.Lib
             return data.Select(x => 2 * (x - ((dataMin + dataMax) / 2)) / (dataMax - dataMin));
         }
 
-        public static List<Vector3> Normalize (this List<Vector3> data)
+        public static IEnumerable<Vector3> Normalize (this IEnumerable<Vector3> data)
         {
-            Vector3 dataMax;
-            dataMax = data.First();
-            Vector3 Average = new Vector3(0, 0, 0);
+            float dataMaxLen = maxVector(data).Length();
+            Vector3 dataAverage = Average(data);
+            return data.Select(x => x - dataAverage / dataMaxLen);
+        }
 
+        private static Vector3 maxVector (this IEnumerable<Vector3> data)
+        {
+            Vector3 maxVector;
+            maxVector = data.First();
             foreach (Vector3 vect in data)
             {
-                if (vect.Length() > dataMax.Length())
+                if (vect.Length() > maxVector.Length())
                 {
-                    dataMax = vect;
+                    maxVector = vect;
                 }
+            }
+            return maxVector;
+        }
+        private static Vector3 Average (this IEnumerable<Vector3> data)
+        {
+            Vector3 Average = Vector3.Zero;
+            foreach (Vector3 vect in data)
+            {
                 Average += vect;
             }
             Average = Average / data.Count();
-
-            for (int i = 0; i < data.Count(); ++i)
-            {
-                data[i] = (data[i] - Average) / dataMax.Length();
-            }
-
-            return data;
+            return Average;
         }
-
         public static Span<double> Normalize(this Span<double> data)
         {
             var (dataMin, dataMax) = getMinAndMax(data);

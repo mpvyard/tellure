@@ -57,7 +57,6 @@ namespace Tellure.CLI
                 var generator = new TimeSeriesGenerator(opts.Sigma, opts.R, opts.B);
                 var y0 = new Vector3(10, 10, 10);
                 var sequence = generator.Generate(y0, opts.Step, opts.Count);
-                //TODO: work with 3d sequence
                 //var sequenceX = sequence.Select(number => number.X);
                 if (opts.Normalize)
                 {

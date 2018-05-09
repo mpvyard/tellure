@@ -15,7 +15,7 @@ namespace Tellure.Lib
             : this(new LorenzSystem(sigma, r, b)) { }
 
         //TODO: try to use Span<T> for generation
-        public List<Vector3> Generate(Vector3 y0, float step, int count)
+        public IEnumerable<Vector3> Generate(Vector3 y0, float step, int count)
         {
             Vector3 k1, k2, k3, k4;
             List<Vector3> result = new List<Vector3>
