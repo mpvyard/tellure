@@ -8,6 +8,5 @@ namespace TSProcessor.CLI.Options
     [Verb("clusterize")]
     class ClusterizationOptions
     {
-
     }
 }

@@ -6,6 +6,9 @@ using Tellure.Lib;
 using System.Numerics;
 using TSProcessor.CLI.Options;
 using System.Collections.Generic;
+using Riowil.Lib;
+using Riowil.Entities;
+using System.Numerics;
 
 namespace TSProcessor.CLI
 {
@@ -19,7 +22,7 @@ namespace TSProcessor.CLI
                 (GenerateOptions opts) => Generate(opts),
                 (NormalizeOptions opts) => Normalize(opts),
                 (PaintOptions opts) => Paint(opts),
-                (ClusterizationOptions opts) => Cluserize(opts),
+                (ClusterizationOptions opts) => Clusterize(opts),
                 errs => HandleParseError(errs));
         }
 
@@ -77,12 +80,78 @@ namespace TSProcessor.CLI
             return 0;
         }
 
-        private static int Cluserize(ClusterizationOptions opts)
+        private static int Clusterize(ClusterizationOptions opts)
         {
             throw new NotImplementedException();
+            SeriesParams seriesParams = GetCurrentParams();
+            Vector3 Y02 = new Vector3 (10, -1, 1);
+            TimeSeriesGenerator lr = new TimeSeriesGenerator(10,280,2.666f);
+            IEnumerable<Vector3> sequence = lr.Generate(Y02, 0.05f, seriesParams.Count);
+            IEnumerable<Vector3> NormalizedSequence = SeriesNormalizer.Normalize(sequence);
+            
+            List<double> dots = new List<double>();
+
+            foreach(Vector3 var in NormalizedSequence)
+            {
+                dots.Add(var.X);
+                dots.Add(var.Y);
+                dots.Add(var.Z);
+            }
+            Series series = new Series(seriesParams, dots);
+            ClusterizeAll(series, seriesParams);
+        }
+        private static void ClusterizeAll(Series series, SeriesParams seriesParams)
+        {
+            int[] step = new int[4];
+            List<ZVector> zVectors = new List<ZVector>();
+            for (int a = 1; a <= 10; a++)
+            {
+                for (int b = 1; b <= 10; b++)
+                {
+                    for (int c = 1; c <= 10; c++)
+                    {
+                        for (int d = 1; d <= 10; d++)
+                        {
+                            step[0] = a;
+                            step[1] = b;
+                            step[2] = c;
+                            step[3] = d;
+                            zVectors.AddRange(FindZVectors(series, step, zVectors.Count));
+                            Clusterize(seriesParams, zVectors);
+                            zVectors.Clear();
+                        }
+                    }
+                }
+            }
+        }
+        private static void Clusterize(SeriesParams seriesParams, List<ZVector> zVectors)
+        {
+            IClusterizeAlgor algor = new WishartAlgor(new WishartParams { H = 0.2, K = 11 });
+            List<InitialCluster> clusters = algor.Clusterize(zVectors);
+        }
+        private static SeriesParams GetCurrentParams()
+        {
+            SeriesType seriesType = SeriesType.Lorence;
+            return new SeriesParams
+            {
+                Category = "",
+                FirstInTraining = 0,
+                CountInTraining = 10000,
+                FirstInTest = 7000,
+                CountInTest = 3000,
+                FistInCheck = 23000,
+                CountInCheck = 500,
+                Type = seriesType
+            };
+        }
+        private static IEnumerable<ZVector> FindZVectors(Series series, int[] step, int firstNumber)
+        {
+            List<double> teachSeries = series.GetTeachSeries();
+            IEnumerable<ZVector> zVectors = ZVectorBuilder.Build(teachSeries, step, firstNumber);
+            return zVectors;
         }
 
-        private static int HandleParseError(IEnumerable<Error> errs)
+        private static int HandleParseError(IEnumerable<CommandLine.Error> errs)
         {
             //TODO: add handling
             //throw new NotImplementedException();

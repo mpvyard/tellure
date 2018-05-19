@@ -23,7 +23,7 @@ namespace Riowil.Lib
 			this.points = points;
 		}
 
-		public List<double> GetCheckSeries(int extraPoints = 0)
+        public List<double> GetCheckSeries(int extraPoints = 0)
 		{
 			List<double> series = new List<double>(seriesParams.CountInCheck);
 			for (int i = seriesParams.FistInCheck - extraPoints; i < seriesParams.FistInCheck + seriesParams.CountInCheck; i++)

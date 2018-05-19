@@ -14,6 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\riowil\Riowil.Entities\Riowil.Entities.csproj" />
+    <ProjectReference Include="..\..\riowil\Riowil.Lib\Riowil.Lib.csproj" />
     <ProjectReference Include="..\..\tellure\Tellure.Lib\Tellure.Lib.csproj" />
   </ItemGroup>
 </Project>
