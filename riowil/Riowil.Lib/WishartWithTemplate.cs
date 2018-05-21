@@ -40,15 +40,15 @@ namespace Riowil.Lib
             }
         }
 
-        public static IEnumerable<int[]> GenerateTemplateForWishart()
+        public static IEnumerable<int[]> GenerateTemplateForWishart(int[] from, int[] to)
         {
-            for (int a = 1; a <= 10; a++)
+            for (int a = from[0]; a <= to[0]; a++)
             {
-                for (int b = 1; b <= 10; b++)
+                for (int b = from[1]; b <= to[1]; b++)
                 {
-                    for (int c = 1; c <= 10; c++)
+                    for (int c = from[2]; c <= to[1]; c++)
                     {
-                        for (int d = 1; d <= 10; d++)
+                        for (int d = from[3]; d <= to[2]; d++)
                         {
                             yield return new int[] { a, b, c, d };
                         }

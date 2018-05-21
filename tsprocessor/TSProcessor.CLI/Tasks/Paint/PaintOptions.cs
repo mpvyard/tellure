@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace TSProcessor.CLI.Options
+namespace TSProcessor.CLI.Tasks.Paint
 {
     [Verb("paint")]
     class PaintOptions

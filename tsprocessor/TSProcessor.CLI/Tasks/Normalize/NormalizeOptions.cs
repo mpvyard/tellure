@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace TSProcessor.CLI.Options
+namespace TSProcessor.CLI.Tasks.Normalize
 {
     //TODO: add HelpText
     [Verb("normalize", HelpText = "Normalizes sequence that is readed from file, by default output range values would be [-1; 1]")]

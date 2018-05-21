@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace TSProcessor.CLI.Options
+namespace TSProcessor.CLI.Tasks.Generate
 {
     //TODO: add HelpText
     [Verb("generate", HelpText = "Generates chaotic series from Lorentz Equation")]
