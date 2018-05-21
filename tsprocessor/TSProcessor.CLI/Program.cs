@@ -178,5 +178,28 @@ namespace TSProcessor.CLI
             //TODO: write results out
             return 0;
         }
+
+        static double[] ReadSeqence(string path)
+        {
+            return ServiceStack.Text.CsvSerializer.DeserializeFromString<double[]>(File.ReadAllText(path).Replace(',', '\n'));
+        }
+
+        static void WriteClusters(string path, double[,] clusters)
+        {
+            using (var writer = new StreamWriter(path))
+            {
+                //ServiceStack.Text.CsvSerializer.SerializeToWriter<double[,]>(clusters, writer);
+
+                ServiceStack.Text.JsonSerializer.SerializeToWriter<double[,]>(clusters, writer);
+
+                //var s = ServiceStack.Text.CsvSerializer.SerializeToString<double[,]>(clusters);
+                //writer.Write(s);
+
+                //ServiceStack.Text.CsvSerializer.WriteLateBoundObject(writer, clusters);  
+            }
+
+        }
+
+
     }
 }
