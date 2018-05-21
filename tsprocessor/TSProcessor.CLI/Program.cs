@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using Riowil.Lib;
 using Riowil.Entities;
 using System.Numerics;
+using Serilog;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TSProcessor.CLI
 {
@@ -16,6 +18,10 @@ namespace TSProcessor.CLI
     {
         static int Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+              .WriteTo.Console()
+              .CreateLogger();
+
             //TODO: add logger
             return Parser.Default.ParseArguments<NormalizeOptions, GenerateOptions, PaintOptions, ClusterizationOptions>(args)
                 .MapResult(
@@ -25,6 +31,7 @@ namespace TSProcessor.CLI
                 (ClusterizationOptions opts) => Clusterize(opts),
                 errs => HandleParseError(errs));
         }
+
 
         private static int Generate(GenerateOptions opts)
         {
@@ -82,11 +89,13 @@ namespace TSProcessor.CLI
 
         private static int Clusterize(ClusterizationOptions opts)
         {
-            throw new NotImplementedException();
+            Log.Logger.Information("Operation started...");
             SeriesParams seriesParams = GetCurrentParams();
             Vector3 Y02 = new Vector3 (10, -1, 1);
-            TimeSeriesGenerator lr = new TimeSeriesGenerator(10,280,2.666f);
-            IEnumerable<Vector3> sequence = lr.Generate(Y02, 0.05f, seriesParams.Count);
+            Log.Logger.Information("Generate time-series");
+            TimeSeriesGenerator lr = new TimeSeriesGenerator(10,28,2.666f);
+            IEnumerable<Vector3> sequence = lr.Generate(Y02, 0.05f, 100000);
+            Log.Logger.Information("Normalize generated series");
             IEnumerable<Vector3> NormalizedSequence = SeriesNormalizer.Normalize(sequence);
             
             List<double> dots = new List<double>();
@@ -94,40 +103,53 @@ namespace TSProcessor.CLI
             foreach(Vector3 var in NormalizedSequence)
             {
                 dots.Add(var.X);
-                dots.Add(var.Y);
-                dots.Add(var.Z);
+                //dots.Add(var.Y);
+                //dots.Add(var.Z);
             }
             Series series = new Series(seriesParams, dots);
-            ClusterizeAll(series, seriesParams);
+            Log.Logger.Information("Start clusterization");
+            ClusterizeAllParallel(series);
+            Log.Logger.Information("Operation completed");
+            return 0;
         }
-        private static void ClusterizeAll(Series series, SeriesParams seriesParams)
+
+        private static void ClusterizeAllParallel(Series series)
         {
-            int[] step = new int[4];
-            List<ZVector> zVectors = new List<ZVector>();
-            for (int a = 1; a <= 10; a++)
+            Wishart.GenerateTemplateForWishart().AsParallel().ForAll(template =>
             {
-                for (int b = 1; b <= 10; b++)
+                var vectors = FindZVectors(series, template, series.Points.Count).ToList();
+                Log.Logger.Information("Clusterize for template {template}", $"{template[0]}-{template[1]}-{template[2]}-{template[3]}");
+                var clusters = Clusterize(vectors);
+                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                    "clusters", $"{template[0]}-{template[1]}-{template[2]}-{template[3]}.json");
+                Log.Logger.Information("Start writing results to file");
+                using (var writer = new StreamWriter(path))
                 {
-                    for (int c = 1; c <= 10; c++)
-                    {
-                        for (int d = 1; d <= 10; d++)
-                        {
-                            step[0] = a;
-                            step[1] = b;
-                            step[2] = c;
-                            step[3] = d;
-                            zVectors.AddRange(FindZVectors(series, step, zVectors.Count));
-                            Clusterize(seriesParams, zVectors);
-                            zVectors.Clear();
-                        }
-                    }
+                    ServiceStack.Text.JsonSerializer.SerializeToWriter(clusters, writer);
+                }
+                Log.Logger.Information("Writing finished");
+            });
+        }
+
+        private static void ClusterizeAll(Series series)
+        {
+            foreach (var template in Wishart.GenerateTemplateForWishart())
+            {
+                var vectors = FindZVectors(series, template, series.Points.Count).ToList();
+                var clusters = Clusterize(vectors);
+                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                    "clusters", $"{template[0]}-{template[1]}-{template[2]}-{template[3]}.json");
+                using (var writer = new StreamWriter(path))
+                {
+                    ServiceStack.Text.JsonSerializer.SerializeToWriter(clusters, writer);
                 }
             }
         }
-        private static void Clusterize(SeriesParams seriesParams, List<ZVector> zVectors)
+        private static IEnumerable<InitialCluster> Clusterize(List<ZVector> zVectors)
         {
             IClusterizeAlgor algor = new WishartAlgor(new WishartParams { H = 0.2, K = 11 });
             List<InitialCluster> clusters = algor.Clusterize(zVectors);
+            return clusters;
         }
         private static SeriesParams GetCurrentParams()
         {

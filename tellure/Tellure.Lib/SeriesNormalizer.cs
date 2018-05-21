@@ -29,7 +29,7 @@ namespace Tellure.Lib
         {
             float dataMaxLen = maxVector(data).Length();
             Vector3 dataAverage = Average(data);
-            return data.Select(x => x - dataAverage / dataMaxLen);
+            return data.Select(x => (x - dataAverage) / dataMaxLen);
         }
 
         private static Vector3 maxVector (this IEnumerable<Vector3> data)
