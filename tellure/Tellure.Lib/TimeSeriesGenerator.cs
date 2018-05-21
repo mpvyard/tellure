@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace Tellure.Lib
@@ -15,7 +16,7 @@ namespace Tellure.Lib
             : this(new LorenzSystem(sigma, r, b)) { }
 
         //TODO: try to use Span<T> for generation
-        public IEnumerable<Vector3> Generate(Vector3 y0, float step, int count)
+        public IEnumerable<Vector3> Generate(Vector3 y0, float step, int skipCount, int count)
         {
             Vector3 k1, k2, k3, k4;
             List<Vector3> result = new List<Vector3>
@@ -23,7 +24,7 @@ namespace Tellure.Lib
                 y0
             };
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < count + skipCount; i++)
             {
                 k1.X = _system.X(result[i].X, result[i].Y) * step;
                 k1.Y = _system.Y(result[i].X, result[i].Y, result[i].Z) * step;
@@ -47,7 +48,7 @@ namespace Tellure.Lib
                     result[i].Z + (k1.Z + 2.0f * k2.Z + 2.0f * k3.Z + k4.Z) / 6.0f
                 ));
             }
-            return result;
+            return result.Skip(skipCount);
         }
     }
 }

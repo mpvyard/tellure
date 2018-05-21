@@ -14,7 +14,9 @@ namespace TSProcessor.CLI.Tasks.Generate
         public float B { get; set; }
         [Option('s', Default = 0.05f, HelpText = "")]
         public float Step { get; set; }
-        [Option('c', Default = 10000, HelpText = "")]
+        [Option('p', Default = 3000, HelpText = "")]
+        public int Skip { get; set; }
+        [Option('c', Default = 100000, HelpText = "")]
         public int Count { get; set; }
 
         [Option('o', HelpText = "")]

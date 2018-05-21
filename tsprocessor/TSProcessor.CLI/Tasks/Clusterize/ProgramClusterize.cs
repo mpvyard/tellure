@@ -20,7 +20,7 @@ namespace TSProcessor.CLI.Tasks.Clusterize
             SeriesParams seriesParams = GetCurrentParams();
             Vector3 Y02 = new Vector3(10, -1, 1);
             TimeSeriesGenerator lr = new TimeSeriesGenerator(10, 28, 2.666f);
-            IEnumerable<Vector3> sequence = lr.Generate(Y02, 0.05f, 100000);
+            IEnumerable<Vector3> sequence = lr.Generate(Y02, 0.05f, 3000, 100000);
 
             logger.LogInformation("Normalize generated series");
             IEnumerable<Vector3> NormalizedSequence = SeriesNormalizer.Normalize(sequence);
