@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Riowil.Entities;
+using Riowil.Entities.Clusters;
 using Riowil.Lib;
 using System;
 using System.Collections.Generic;
@@ -59,7 +60,7 @@ namespace TSProcessor.CLI.Tasks.Clusterize
                     ServiceStack.Text.JsonSerializer.SerializeToWriter(clusters, writer);
                 }
 
-                var centers = clusters.Select(cluster => cluster.Centr.List).ToList();
+                var centers = clusters.Select(cluster => cluster.Centr).ToList();
                 var pathCenters = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
                     "clusters", $"{stringTemplate}.centers.json");
                 using (var writer = new StreamWriter(pathCenters))
@@ -85,10 +86,10 @@ namespace TSProcessor.CLI.Tasks.Clusterize
             }
         }
 
-        private static IEnumerable<InitialCluster> Clusterize(List<ZVector> zVectors)
+        private static IEnumerable<GenericInitialCluster<IZVector<ZVector>, ZVector>> Clusterize(List<ZVector> zVectors)
         {
-            IClusterizeAlgor algor = new WishartAlgor(new WishartParams { H = 0.2, K = 11 });
-            List<InitialCluster> clusters = algor.Clusterize(zVectors);
+            IClusterizeAlgor<ZVector> algor = new WishartAlgor(new WishartParams { H = 0.2, K = 11 });
+            List<GenericInitialCluster<IZVector<ZVector>, ZVector>> clusters = algor.Clusterize(zVectors);
             return clusters;
         }
 
@@ -113,6 +114,6 @@ namespace TSProcessor.CLI.Tasks.Clusterize
             List<double> teachSeries = series.GetTeachSeries();
             IEnumerable<ZVector> zVectors = ZVectorBuilder.Build(teachSeries, step, firstNumber);
             return zVectors;
-        
+        }
     }
 }

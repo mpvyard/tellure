@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Riowil.Entities;
 using Riowil.Entities.Clusters;
@@ -28,7 +29,7 @@ namespace Riowil.Lib
             this.h = param.H;
         }
         //For Vector3
-        public List<InitialCluster3d> Clusterize(List<ZVector3d> zVectors)
+        public List<GenericInitialCluster<IZVector<ZVector3d>, ZVector3d>> Clusterize(List<ZVector3d> zVectors)
         {
             Prepare3(zVectors);
 
@@ -104,7 +105,7 @@ namespace Riowil.Lib
                         }
                         else
                         {
-                            clusters[0].Add(c);
+                            clusters[0].Add(c.ZVectors);
                             clusters.Remove(c);
                         }
                     }
@@ -113,7 +114,7 @@ namespace Riowil.Lib
                 {
                     for (int j = l.Count - 1; j > 0; j--)
                     {
-                        clusters[l[0]].Add(clusters[l[j]]);
+                        clusters[l[0]].Add(clusters[l[j]].ZVectors);
                         clusters.Remove(clusters[l[j]]);
                     }
                     clusters[l[0]].Add(xi);
@@ -127,7 +128,9 @@ namespace Riowil.Lib
             //    cluster.SetCentr();
             //}
 
-            return clusters;
+            var Clustrs = clusters.Cast<GenericInitialCluster<IZVector<ZVector3d>, ZVector3d>>().ToList();
+
+            return Clustrs;
         }
 
         private int CompareTupleByItem2(Tuple<ZVector3d, double> t1, Tuple<ZVector3d, double> t2)

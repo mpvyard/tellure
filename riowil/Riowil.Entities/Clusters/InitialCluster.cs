@@ -7,12 +7,14 @@ namespace Riowil.Entities.Clusters
 {
     public class InitialCluster : GenericInitialCluster<ZVector, double>
     {
-        public InitialCluster(ZVector zVector)
+        
+
+        public InitialCluster(ZVector zVector = null)
             : base(zVector)
         {
         }
 
-        private protected override List<double> FindCentr()
+        protected override List<double> FindCentr()
         {
             List<double> res = ZVectors[0].List.ToList();
 

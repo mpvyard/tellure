@@ -31,7 +31,7 @@ namespace Riowil.Entities.Clusters
         }
 
         //public GenericInitialCluster(TZVector zVector = null)
-        public GenericInitialCluster(TZVector zVector)
+        public GenericInitialCluster(TZVector zVector )
         {
             zVectors = new List<TZVector>();
             if (zVector != null)
@@ -52,6 +52,12 @@ namespace Riowil.Entities.Clusters
         {
             ZVectors.Add(x);
         }
+
+        //public void Add(InitialCluster x)
+        //{
+        //    ZVectors.Add(x);
+        //}
+
 
         public List<TCentr> Centr
         {

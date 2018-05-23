@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Riowil.Entities
 {
-    class Series3d
+    public class Series3d
     {
         private readonly SeriesParams seriesParams;
         private readonly List<Vector3> points3;

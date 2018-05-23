@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Riowil.Entities;
+using Riowil.Entities.Clusters;
 
 namespace Riowil.Lib
 {
-	public class WishartAlgor : IClusterizeAlgor<ZVector>
+	public class WishartAlgor : IClusterizeAlgor<double>
 	{
 		private readonly int k;
 		private readonly double h;
@@ -26,8 +27,8 @@ namespace Riowil.Lib
 			this.h = param.H;
 		}
 
-		public List<InitialCluster> Clusterize(List<ZVector> zVectors)//
-		{
+        public List<GenericInitialCluster<IZVector<double>, double>> Clusterize(List<IZVector<double>> zVectors)//
+        {
 			Prepare(zVectors);
 
 			double e = 0.000001;
@@ -102,7 +103,7 @@ namespace Riowil.Lib
 						}
 						else
 						{
-							clusters[0].Add(c);
+							clusters[0].Add(c.ZVectors);
 							clusters.Remove(c);
 						}
 					}
@@ -111,7 +112,7 @@ namespace Riowil.Lib
 				{
 					for (int j = l.Count - 1; j > 0; j--)
 					{
-						clusters[l[0]].Add(clusters[l[j]]);
+						clusters[l[0]].Add(clusters[l[j]].ZVectors);
 						clusters.Remove(clusters[l[j]]);
 					}
 					clusters[l[0]].Add(xi);
@@ -275,7 +276,6 @@ namespace Riowil.Lib
 			}
 			return false;
 		}
-       
 
     }
 

@@ -6,6 +6,6 @@ namespace Riowil.Lib
 {
 	public interface IClusterizeAlgor<T>
 	{
-        List<GenericInitialCluster<IZVector<T>, T>> Clusterize(List<T> zVectors);
+        List<GenericInitialCluster<IZVector<T>, T>> Clusterize(List<IZVector<T>> zVectors);
     }
 }
