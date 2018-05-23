@@ -86,10 +86,10 @@ namespace TSProcessor.CLI.Tasks.Clusterize
             }
         }
 
-        private static IEnumerable<GenericInitialCluster<IZVector<ZVector>, ZVector>> Clusterize(List<ZVector> zVectors)
+        private static IEnumerable<InitialCluster> Clusterize(List<ZVector> zVectors)
         {
-            IClusterizeAlgor<ZVector> algor = new WishartAlgor(new WishartParams { H = 0.2, K = 11 });
-            List<GenericInitialCluster<IZVector<ZVector>, ZVector>> clusters = algor.Clusterize(zVectors);
+            WishartAlgor algor = new WishartAlgor(new WishartParams { H = 0.2, K = 11 });
+            List<InitialCluster> clusters = algor.Clusterize(zVectors);
             return clusters;
         }
 

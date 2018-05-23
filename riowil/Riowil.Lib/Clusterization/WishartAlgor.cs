@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Riowil.Entities;
 using Riowil.Entities.Clusters;
 
 namespace Riowil.Lib
 {
-	public class WishartAlgor : IClusterizeAlgor<double>
+	public class WishartAlgor
 	{
 		private readonly int k;
 		private readonly double h;
@@ -27,7 +28,7 @@ namespace Riowil.Lib
 			this.h = param.H;
 		}
 
-        public List<GenericInitialCluster<IZVector<double>, double>> Clusterize(List<IZVector<double>> zVectors)//
+        public List<InitialCluster> Clusterize(List<ZVector> zVectors)//
         {
 			Prepare(zVectors);
 
@@ -121,12 +122,11 @@ namespace Riowil.Lib
 			}
 
 			clusters.Remove(clusters[0]);
-			//foreach (var cluster in clusters)
-			//{
-			//    cluster.SetCentr();
-			//}
-
-			return clusters;
+            //foreach (var cluster in clusters)
+            //{
+            //    cluster.SetCentr();
+            //}
+            return clusters;
 		}
 
 		private int CompareTupleByItem2(Tuple<ZVector, double> t1, Tuple<ZVector, double> t2)

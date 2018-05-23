@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using Riowil.Entities;
 using Riowil.Entities.Clusters;
 
 namespace Riowil.Lib
 {
-    public class WishartAlgor3d : IClusterizeAlgor<ZVector3d>
+    public class WishartAlgor3d
     {
         private readonly int k;
         private readonly double h;
@@ -29,7 +30,7 @@ namespace Riowil.Lib
             this.h = param.H;
         }
         //For Vector3
-        public List<GenericInitialCluster<IZVector<ZVector3d>, ZVector3d>> Clusterize(List<ZVector3d> zVectors)
+        public List<InitialCluster3d> Clusterize(List<ZVector3d> zVectors)
         {
             Prepare3(zVectors);
 
@@ -127,10 +128,7 @@ namespace Riowil.Lib
             //{
             //    cluster.SetCentr();
             //}
-
-            var Clustrs = clusters.Cast<GenericInitialCluster<IZVector<ZVector3d>, ZVector3d>>().ToList();
-
-            return Clustrs;
+            return clusters;
         }
 
         private int CompareTupleByItem2(Tuple<ZVector3d, double> t1, Tuple<ZVector3d, double> t2)
