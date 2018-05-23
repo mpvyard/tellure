@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Numerics;
 
-namespace Riowil.Lib
+namespace Riowil.Entities
 {
     class Series3d
     {

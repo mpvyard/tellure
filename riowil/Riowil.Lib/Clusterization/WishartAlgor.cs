@@ -4,7 +4,7 @@ using Riowil.Entities;
 
 namespace Riowil.Lib
 {
-	public class WishartAlgor : IClusterizeAlgor
+	public class WishartAlgor : IClusterizeAlgor<ZVector>
 	{
 		private readonly int k;
 		private readonly double h;

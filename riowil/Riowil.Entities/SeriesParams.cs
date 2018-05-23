@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using Riowil.Entities;
 
-namespace Riowil.Lib
+namespace Riowil.Entities
 {
 	public class SeriesParams
 	{

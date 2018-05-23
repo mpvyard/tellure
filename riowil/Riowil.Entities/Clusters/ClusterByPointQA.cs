@@ -1,4 +1,4 @@
-namespace Riowil.Entities
+namespace Riowil.Entities.Clusters
 {
 	public class ClusterByPointQA
 	{

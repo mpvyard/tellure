@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using Riowil.Entities;
+using Riowil.Entities.Clusters;
 
 namespace Riowil.Lib
 {
-    public class WishartAlgor3d : IClusterizeAlgor
+    public class WishartAlgor3d : IClusterizeAlgor<ZVector3d>
     {
         private readonly int k;
         private readonly double h;

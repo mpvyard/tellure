@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Riowil.Entities
+namespace Riowil.Entities.Clusters
 {
 	public class ClusterInfoSum
 	{

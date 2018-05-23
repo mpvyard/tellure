@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace Riowil.Entities
 {
-    public class ZVector3d
+    public class ZVector3d : IZVector<Vector3>
     {
         private readonly int num;
         private readonly int[] pattern;//template 
@@ -44,25 +44,6 @@ namespace Riowil.Entities
             sb.Append(string.Join(ZVectorFormat.ValueSeparator.ToString(), valuesStr));
 
             return sb.ToString();
-        }
-
-        public static ZVector3d Parse(string str, int[] pattern)
-        {
-            string[] numList = str.Split(ZVectorFormat.NumSeparator);
-
-            int num = int.Parse(numList[0]);
-            List<Vector3> list = new List<Vector3>();
-
-            string[] listStr = numList[1].Split(ZVectorFormat.ValueSeparator);
-
-            foreach (string itemStr in listStr)
-            {
-                if (!itemStr.Equals(""))
-                {
-                    //list.Add(double.Parse(itemStr));           
-                }
-            }
-            return new ZVector3d(list, pattern, num);
         }
     }
 }

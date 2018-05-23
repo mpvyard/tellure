@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Numerics;
 
-namespace Riowil.Lib
+namespace Riowil.Entities
 {
 	public class Series
 	{        
