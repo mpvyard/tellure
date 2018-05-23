@@ -66,7 +66,7 @@ namespace Riowil.Entities.Clusters
             }
         }
 
-        private protected abstract List<TCentr> FindCentr();
+        protected abstract List<TCentr> FindCentr();
 
         public Cluster<TCentr> ToCluster(int id)
         {
