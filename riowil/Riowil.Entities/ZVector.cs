@@ -66,20 +66,6 @@ namespace Riowil.Entities
 			return new ZVector(list, pattern, num);
 
 		}
-        //For Vector3
-        private readonly List<Vector3> list3;
-        public ZVector(List<Vector3> list3, int[] pattern, int num = -1)
-        {
-            this.list3 = list3;
-            this.pattern = pattern;
-            this.num = num;
-        }
-
-        public List<Vector3> List3
-        {
-            get { return list3; }
-        }
-        //
     }
 
 	internal static class ZVectorFormat

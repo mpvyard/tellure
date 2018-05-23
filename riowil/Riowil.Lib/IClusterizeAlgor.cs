@@ -5,7 +5,7 @@ namespace Riowil.Lib
 {
 	public interface IClusterizeAlgor
 	{
-		List<InitialCluster> Clusterize(List<ZVector> zVectors);
-        List<InitialCluster> Clusterize3(List<ZVector> zVectors);
+        List<InitialCluster> Clusterize(List<ZVector3d> zVectors);
+        List<InitialCluster> Clusterize(List<ZVector> zVectors);
     }
 }
