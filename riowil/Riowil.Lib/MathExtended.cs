@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace Riowil.Lib
 {
@@ -19,7 +20,6 @@ namespace Riowil.Lib
                 double dif = l1[i] - l2[i];
                 sum += dif * dif;
             }
-
             return Math.Sqrt(sum);
         }
 
@@ -59,6 +59,19 @@ namespace Riowil.Lib
             double normParam = vector.Max() - vector.Min();
             double min = vector.Min();
             return vector.Select(el => (el - min) / normParam).ToList();
+        }
+        //For Vector3
+        public static double Distance3(List<Vector3> l1, List<Vector3> l2)
+        {
+            double sum = 0;
+
+            for (int i = 0; i < l1.Count; i++)
+            {
+                double dif = Vector3.Distance(l1[i],l2[i]);
+                sum += dif * dif;
+            }
+
+            return Math.Sqrt(sum);
         }
     }
 }

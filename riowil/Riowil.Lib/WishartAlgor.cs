@@ -26,7 +26,7 @@ namespace Riowil.Lib
 			this.h = param.H;
 		}
 
-		public List<InitialCluster> Clusterize(List<ZVector> zVectors)
+		public List<InitialCluster> Clusterize(List<ZVector> zVectors)//
 		{
 			Prepare(zVectors);
 
@@ -133,7 +133,7 @@ namespace Riowil.Lib
 			return t1.Item2.CompareTo(t2.Item2);
 		}
 
-		private void Prepare(List<ZVector> zVectors)
+		private void Prepare(List<ZVector> zVectors)//+
 		{
 			if (zVectors == null || zVectors.Count == 0)
 			{
@@ -166,7 +166,7 @@ namespace Riowil.Lib
 			}
 		}
 
-		private double dk(ZVector xi)
+		private double dk(ZVector xi)//+
 		{
 			int index = x.IndexOf(xi);
 			List<double> dictance = new List<double>();
@@ -181,17 +181,17 @@ namespace Riowil.Lib
 			return dictance[k];
 		}
 
-		private double p(int i)
+		private double p(int i)//+
 		{
 			return k / (Vk(i) * n);
 		}
 
-		private double Vk(int i)
+		private double Vk(int i)//+
 		{
 			return V(distance[i], dimension);
 		}
 
-		private double V(double R, int dimension)
+		private double V(double R, int dimension)//+
         {
             switch (dimension)
             {
@@ -256,7 +256,7 @@ namespace Riowil.Lib
 			return z;
 		}
 
-		private bool Check(InitialCluster c)
+		private bool Check(InitialCluster c)//Проверка на значимость
 		{
 			int count = c.ZVectors.Count;
 			double cur;
@@ -275,11 +275,246 @@ namespace Riowil.Lib
 			}
 			return false;
 		}
-	}
 
-	public class WishartParams
+        //For Vector3
+        public List<InitialCluster> Clusterize3(List<ZVector> zVectors)
+        {
+            Prepare3(zVectors);
+
+            double e = 0.000001;
+            clusters.Add(new InitialCluster());
+            for (int i = 0; i < n; i++)
+            {
+                ZVector xi = x[i];
+
+                List<double> Ui = BuildU3(i);//Строим вершины графа 
+
+                //находим номера l классов, которые содержат точки, с которыми связана xi
+                List<int> l = new List<int>();
+                for (int j = 0; j < Ui.Count; j++)
+                {
+                    if (Ui[j] > e) //xi связанна с xj
+                    {
+                        int wxj = w3(x[j]);
+                        if (wxj != -1 && (!l.Contains(wxj)) && IsFar(xi, clusters[wxj]))
+                        {
+                            l.Add(wxj);
+                        }
+                    }
+                }
+
+                //(3.1)
+                if (l.Count == 0)
+                {
+                    clusters.Add(new InitialCluster(xi));
+                    continue;
+                }
+                //(3.2)
+                if (l.Count == 1)
+                {
+                    if (clusters[l[0]].IsFormed)
+                    {
+                        clusters[0].Add(xi);
+                    }
+                    else
+                    {
+                        clusters[l[0]].Add(xi);
+                    }
+                    continue;
+                }
+                //(3.3)
+                //проверяем сколько классов сформировано
+                int tmp = 1;
+                for (; tmp < clusters.Count; tmp++)
+                {
+                    if (!clusters[tmp].IsFormed)
+                    { break; }
+                }
+                //(3.3.1)
+                if (tmp == clusters.Count) //все классы сформированы
+                {
+                    clusters[0].Add(xi);
+                    continue;
+                }
+                //(3.3.2)                
+                int zh = z3(l);
+                l.Sort();
+                //a)
+                if (zh > 1 || l[0] == 0)
+                {
+                    clusters[0].Add(xi);
+
+                    for (int j = clusters.Count - 1; j >= 1; j--)
+                    {
+                        InitialCluster c = clusters[j];
+                        if (Check3(c))
+                        {
+                            c.IsFormed = true;
+                        }
+                        else
+                        {
+                            clusters[0].Add(c);
+                            clusters.Remove(c);
+                        }
+                    }
+                }
+                else //b)
+                {
+                    for (int j = l.Count - 1; j > 0; j--)
+                    {
+                        clusters[l[0]].Add(clusters[l[j]]);
+                        clusters.Remove(clusters[l[j]]);
+                    }
+                    clusters[l[0]].Add(xi);
+                }
+
+            }
+
+            clusters.Remove(clusters[0]);
+            //foreach (var cluster in clusters)
+            //{
+            //    cluster.SetCentr();
+            //}
+
+            return clusters;
+        }
+            //begin Prepare3()
+        private void Prepare3(List<ZVector> zVectors)
+        {
+            if (zVectors == null || zVectors.Count == 0)
+            {
+                throw new ArgumentNullException("zVectors");
+            }
+
+            this.n = zVectors.Count;//количество zвекторов
+            this.x = new List<ZVector>();//Список zвекторов
+            this.distance = new List<double>();//растояние iго вектора до к ближайшего соседа
+            this.px = new List<double>();//плотность для к ближайших соседей
+            this.clusters = new List<InitialCluster>();
+            this.dimension = zVectors[0].List3.Count;//количество точек в zвекторе
+
+            x.AddRange(zVectors);
+            List<Tuple<ZVector, double>> list = new List<Tuple<ZVector, double>>();
+            for (int i = 0; i < zVectors.Count; i++)
+            {
+                Tuple<ZVector, double> t = new Tuple<ZVector, double>(zVectors[i], dk3(zVectors[i]));
+                list.Add(t);
+            }
+
+            list.Sort(CompareTupleByItem2);
+            x.Clear();
+
+            for (int i = 0; i < zVectors.Count; i++)
+            {
+                x.Add(list[i].Item1);
+                distance.Add(list[i].Item2);
+                px.Add(p3(i));
+            }
+        }
+
+        private double dk3(ZVector xi)//подсчет растояние zвектора xi со всеми векторами
+        {
+            int index = x.IndexOf(xi);
+            List<double> dictance = new List<double>();
+            for (int i = 0; i < n; i++)
+            {
+                if (i != index)
+                {
+                    dictance.Add(MathExtended.Distance3(xi.List3, x[i].List3));
+                }
+            }
+            dictance.Sort();
+            return dictance[k];
+        }
+
+        private double p3(int i)//Плотность
+        {
+            return k / (Vk3(i) * n);
+        }
+
+        private double Vk3(int i)
+        {
+            return V3(distance[i], dimension);//dimension == zVectors[0].List3.Count
+        }
+
+        private double V3(double R, int dimension)//Объем минимального гипершара
+        {
+            switch (dimension)
+            {
+                case 1:
+                    return 2 * R;
+                case 2:
+                    return Math.PI * R * R;
+                default:
+                    return 2 * Math.PI * R * R * V3(R, dimension - 2) / dimension;
+            }
+        }
+        //end Prepare3()
+
+        private List<double> BuildU3(int i)//(Строим вершину графа) возвращает список растояний i го zвектора с 
+        {
+            List<double> U = new List<double>();
+            double dK = distance[i];
+            for (int j = 0; j < i; j++)
+            {
+                double dij = MathExtended.Distance3(x[i].List3, x[j].List3);
+                double uj = dij <= dK ? dij : 0.0;
+                U.Add(uj);
+            }
+            return U;
+        }
+
+        private int w3(ZVector zVector)//возвращает номер кластера в котором содержиться zvector, если zvector не содержится ни в одном из кластеров, возврщ -1
+        {
+            for (int i = 0; i < clusters.Count; i++)
+            {
+                if (clusters[i].ZVectors.Contains(zVector))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        private int z3(IEnumerable<int> l)//количество значимых классов
+        {
+            int z = 0;
+            foreach (int i in l)
+            {
+                if (Check3(clusters[i]))
+                {
+                    z++;
+                }
+            }
+            return z;
+        }
+        private bool Check3(InitialCluster c)//Проверка на значимость
+        {
+            int count = c.ZVectors.Count;
+            double cur;
+            for (int i = 0; i < count; i++)
+            {
+                for (int j = 0; j < count; j++)
+                {
+                    if (i == j) continue;
+
+                    cur = Math.Abs(px[i] - px[j]);
+                    if (cur >= h)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        //
+
+    }
+
+    public class WishartParams
 	{
 		public int K { get; set; }
 		public double H { get; set; }
 	}
+
 }

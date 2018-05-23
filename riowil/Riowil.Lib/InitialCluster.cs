@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Riowil.Entities;
+using System.Numerics;
 
 namespace Riowil.Lib
 {
@@ -72,27 +73,28 @@ namespace Riowil.Lib
 			};
 		}
 
-		private ZVector FindCentr()
-		{
-			List<double> res = zVectors[0].List.ToList();
+        private ZVector FindCentr()
+        {
+            List<double> res = zVectors[0].List.ToList();
 
-			for (int i = 1; i < zVectors.Count; i++)
-			{
-				for (int j = 0; j < zVectors[i].List.Count; j++)
-				{
-					res[j] += zVectors[i].List[j];
-				}
-			}
+            for (int i = 1; i < zVectors.Count; i++)
+            {
+                for (int j = 0; j < zVectors[i].List.Count; j++)
+                {
+                    res[j] += zVectors[i].List[j];
+                }
+            }
 
-			for (int j = 0; j < zVectors[0].List.Count; j++)
-			{
-				res[j] /= zVectors.Count;
-			}
+            for (int j = 0; j < zVectors[0].List.Count; j++)
+            {
+                res[j] /= zVectors.Count;
+            }
 
-			return new ZVector(res, zVectors[0].Pattern);
-		}
+            return new ZVector(res, zVectors[0].Pattern);
+        }
 
-		public override string ToString()
+
+        public override string ToString()
 		{
 			IEnumerable<string> valuesStr = zVectors.Select(x => x.ToString());
 			return string.Join(ClusterFormat.ValueSeparator.ToString(), valuesStr);
@@ -112,7 +114,40 @@ namespace Riowil.Lib
 
 			return cluster;
 		}
-	}
+        //For Vector3
+        public ZVector Centr3
+        {
+            get
+            {
+                if (!actualCentr)
+                {
+                    centr = FindCentr3();
+                    actualCentr = true;
+                }
+                return centr;
+            }
+        }
+
+        private ZVector FindCentr3()
+        {
+            List<Vector3> res = zVectors[0].List3.ToList();
+
+            for (int i = 1; i < zVectors.Count; i++)
+            {
+                for (int j = 0; j < zVectors[i].List3.Count; j++)
+                {
+                    res[j] += zVectors[i].List3[j];
+                }
+            }
+
+            for (int j = 0; j < zVectors[0].List3.Count; j++)
+            {
+                res[j] /= zVectors.Count;
+            }
+
+            return new ZVector(res, zVectors[0].Pattern);
+        }
+    }
 
 	internal static class ClusterFormat
 	{

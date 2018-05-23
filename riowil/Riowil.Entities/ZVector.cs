@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace Riowil.Entities
 {
 	public class ZVector
 	{
 		private readonly int num;
-		private readonly int[] pattern;
-		private readonly List<double> list;
+		private readonly int[] pattern;//template 
+		private readonly List<double> list;//sequence has generated from templates 
 
 		public List<double> List
 		{
@@ -65,7 +66,21 @@ namespace Riowil.Entities
 			return new ZVector(list, pattern, num);
 
 		}
-	}
+        //For Vector3
+        private readonly List<Vector3> list3;
+        public ZVector(List<Vector3> list3, int[] pattern, int num = -1)
+        {
+            this.list3 = list3;
+            this.pattern = pattern;
+            this.num = num;
+        }
+
+        public List<Vector3> List3
+        {
+            get { return list3; }
+        }
+        //
+    }
 
 	internal static class ZVectorFormat
 	{
@@ -73,4 +88,8 @@ namespace Riowil.Entities
 		public const string ValueFormat = "0.#############;-0.#############;0";
 		public const char ValueSeparator = '#';
 	}
+
+
+
+
 }
