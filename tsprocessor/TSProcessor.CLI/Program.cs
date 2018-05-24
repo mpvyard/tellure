@@ -25,7 +25,7 @@ namespace TSProcessor.CLI
                 (GenerateOptions opts) => Generator.Generate(opts, logger),
                 (NormalizeOptions opts) => Normalizer.Normalize(opts, logger),
                 (PaintOptions opts) => Painter.Paint(opts, logger),
-                (ClusterizationOptions opts) => Clusterizer.Clusterize(opts, logger),
+                (ClusterizationOptions opts) => ProgramClusterize3d.Clusterize(opts, logger),
                 errs => HandleParseError(errs, logger));
         }
 
