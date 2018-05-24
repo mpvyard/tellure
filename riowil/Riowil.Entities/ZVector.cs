@@ -7,13 +7,13 @@ using System.Numerics;
 
 namespace Riowil.Entities
 {
-	public class ZVector : IZVector<double>
+	public class ZVector : IZVector<float>
 	{
 		private readonly int num;
 		private readonly int[] pattern;//template 
-		private readonly List<double> list;//sequence has generated from templates 
+		private readonly List<float> list;//sequence has generated from templates 
 
-		public List<double> List
+		public IReadOnlyList<float> List
 		{
 			get { return list; }
 		}
@@ -28,7 +28,7 @@ namespace Riowil.Entities
 			get { return num; }
 		}
 
-		public ZVector(List<double> list, int[] pattern, int num = -1)
+		public ZVector(List<float> list, int[] pattern, int num = -1)
 		{
 			this.list = list;
 			this.pattern = pattern;

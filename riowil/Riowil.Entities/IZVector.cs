@@ -6,7 +6,7 @@ namespace Riowil.Entities
 {
     public interface IZVector<T>
     {
-        List<T> List { get; }
+        IReadOnlyList<T> List { get; }
         int Num { get; }
     }
 }

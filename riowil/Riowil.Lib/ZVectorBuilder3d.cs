@@ -7,7 +7,7 @@ namespace Riowil.Lib
     public static class ZVectorBuilder3d
     {
         //For Vector3
-        public static List<ZVector3d> Build(List<Vector3> points, int[] step, int firstNumber)//firstNumber == series.Points.Count ???
+        public static IReadOnlyList<ZVector3d> Build(IReadOnlyList<Vector3> points, int[] step, int firstNumber)//firstNumber == series.Points.Count ???
         {
             int n = points.Count;
             int z = step.Length + 1;

@@ -12,7 +12,7 @@ namespace Riowil.Entities.Clusters
         {
         }
 
-        protected override List<Vector3> FindCentr()
+        protected override IReadOnlyList<Vector3> FindCentr()
         {
             List<Vector3> res = ZVectors[0].List.ToList();
 

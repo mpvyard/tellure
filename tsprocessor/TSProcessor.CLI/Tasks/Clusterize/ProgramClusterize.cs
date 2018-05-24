@@ -18,22 +18,14 @@ namespace TSProcessor.CLI.Tasks.Clusterize
             logger.LogInformation("Operation started...");
 
             logger.LogInformation("Generate time-series");
-            SeriesParams seriesParams = GetCurrentParams();
             Vector3 Y02 = new Vector3(10, -1, 1);
             TimeSeriesGenerator lr = new TimeSeriesGenerator(10, 28, 2.666f);
-            IEnumerable<Vector3> sequence = lr.Generate(Y02, 0.05f, 3000, 100000);
+            IEnumerable<Vector3> sequence = lr.Generate(Y02, 0.05f, 3000, 13500);
 
             logger.LogInformation("Normalize generated series");
             IEnumerable<Vector3> NormalizedSequence = SeriesNormalizer.Normalize(sequence);
-            //Some convertion here to series
-            List<double> dots = new List<double>();
-            foreach (Vector3 var in NormalizedSequence)
-            {
-                dots.Add(var.X);
-                //dots.Add(var.Y);
-                //dots.Add(var.Z);
-            }
-            Series series = new Series(seriesParams, dots);
+
+            var series = NormalizedSequence.Select(vector => vector.X).ToList();
 
             logger.LogInformation("Start clusterization");
             ClusterizeAllParallel(series, opts.From, opts.To, logger);
@@ -42,12 +34,12 @@ namespace TSProcessor.CLI.Tasks.Clusterize
         }
 
 
-        private static void ClusterizeAllParallel(Series series, int[] from, int[] to, ILogger logger)
+        private static void ClusterizeAllParallel(IReadOnlyList<float> series, int[] from, int[] to, ILogger logger)
         {
             Wishart.GenerateTemplateForWishart(from, to).AsParallel().ForAll(template =>
             {
                 string stringTemplate = $"{template[0]}-{template[1]}-{template[2]}-{template[3]}";
-                var vectors = FindZVectors(series, template, 0).ToList();
+                var vectors = ZVectorBuilder.Build(series, template, 0);
 
                 logger.LogInformation("Clusterize for template {template}", stringTemplate);
                 var clusters = Clusterize(vectors);
@@ -71,11 +63,11 @@ namespace TSProcessor.CLI.Tasks.Clusterize
             });
         }
 
-        private static void ClusterizeAll(Series series, int[] from, int[] to, ILogger logger)
+        private static void ClusterizeAll(IReadOnlyList<float> series, int[] from, int[] to, ILogger logger)
         {
             foreach (var template in Wishart.GenerateTemplateForWishart(from, to))
             {
-                var vectors = FindZVectors(series, template, series.Points.Count).ToList();
+                var vectors = ZVectorBuilder.Build(series, template, 0);
                 var clusters = Clusterize(vectors);
                 var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
                     "clusters", $"{template[0]}-{template[1]}-{template[2]}-{template[3]}.json");
@@ -86,34 +78,11 @@ namespace TSProcessor.CLI.Tasks.Clusterize
             }
         }
 
-        private static IEnumerable<InitialCluster> Clusterize(List<ZVector> zVectors)
+        private static IReadOnlyList<InitialCluster> Clusterize(IReadOnlyList<ZVector> zVectors)
         {
             WishartAlgor algor = new WishartAlgor(new WishartParams { H = 0.2, K = 11 });
-            List<InitialCluster> clusters = algor.Clusterize(zVectors);
+            var clusters = algor.Clusterize(zVectors);
             return clusters;
-        }
-
-        private static SeriesParams GetCurrentParams()
-        {
-            SeriesType seriesType = SeriesType.Lorence;
-            return new SeriesParams
-            {
-                Category = "",
-                FirstInTraining = 0,
-                CountInTraining = 10000,
-                FirstInTest = 7000,
-                CountInTest = 3000,
-                FistInCheck = 23000,
-                CountInCheck = 500,
-                Type = seriesType
-            };
-        }
-
-        private static IEnumerable<ZVector> FindZVectors(Series series, int[] step, int firstNumber)
-        {
-            List<double> teachSeries = series.GetTeachSeries();
-            IEnumerable<ZVector> zVectors = ZVectorBuilder.Build(teachSeries, step, firstNumber);
-            return zVectors;
         }
     }
 }

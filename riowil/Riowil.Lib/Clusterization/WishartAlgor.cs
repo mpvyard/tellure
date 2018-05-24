@@ -28,7 +28,7 @@ namespace Riowil.Lib
 			this.h = param.H;
 		}
 
-        public List<InitialCluster> Clusterize(List<ZVector> zVectors)//
+        public IReadOnlyList<InitialCluster> Clusterize(IReadOnlyList<ZVector> zVectors)//
         {
 			Prepare(zVectors);
 
@@ -134,7 +134,7 @@ namespace Riowil.Lib
 			return t1.Item2.CompareTo(t2.Item2);
 		}
 
-		private void Prepare(List<ZVector> zVectors)//+
+		private void Prepare(IReadOnlyList<ZVector> zVectors)//+
 		{
 			if (zVectors == null || zVectors.Count == 0)
 			{

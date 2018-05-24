@@ -13,7 +13,7 @@ namespace Riowil.Entities
         private readonly int[] pattern;//template 
         private readonly List<Vector3> list;//sequence has generated from templates 
 
-        public List<Vector3> List
+        public IReadOnlyList<Vector3> List
         {
             get { return list; }
         }

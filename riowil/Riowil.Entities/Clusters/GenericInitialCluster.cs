@@ -9,7 +9,7 @@ namespace Riowil.Entities.Clusters
         where TZVector : IZVector<TCentr>
     {
         private List<TZVector> zVectors;
-        private List<TCentr> centr;
+        private IReadOnlyList<TCentr> centr;
         private bool isFormed;
 
         private bool actualCentr;
@@ -45,12 +45,12 @@ namespace Riowil.Entities.Clusters
 
         public void Add(IEnumerable<TZVector> c)
         {
-            ZVectors.AddRange(c);
+            zVectors.AddRange(c);
         }
 
         public void Add(TZVector x)
         {
-            ZVectors.Add(x);
+            zVectors.Add(x);
         }
 
         //public void Add(InitialCluster x)
@@ -59,7 +59,7 @@ namespace Riowil.Entities.Clusters
         //}
 
 
-        public List<TCentr> Centr
+        public IReadOnlyList<TCentr> Centr
         {
             get
             {
@@ -72,7 +72,7 @@ namespace Riowil.Entities.Clusters
             }
         }
 
-        protected abstract List<TCentr> FindCentr();
+        protected abstract IReadOnlyList<TCentr> FindCentr();
 
         public Cluster<TCentr> ToCluster(int id)
         {

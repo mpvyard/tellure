@@ -5,18 +5,16 @@ using System.Numerics;
 
 namespace Riowil.Entities.Clusters
 {
-    public class InitialCluster : GenericInitialCluster<ZVector, double>
+    public class InitialCluster : GenericInitialCluster<ZVector, float>
     {
-        
-
         public InitialCluster(ZVector zVector = null)
             : base(zVector)
         {
         }
 
-        protected override List<double> FindCentr()
+        protected override IReadOnlyList<float> FindCentr()
         {
-            List<double> res = ZVectors[0].List.ToList();
+            List<float> res = ZVectors[0].List.ToList();
 
             for (int i = 1; i < ZVectors.Count; i++)
             {

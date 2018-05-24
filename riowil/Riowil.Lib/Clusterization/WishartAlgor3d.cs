@@ -30,7 +30,7 @@ namespace Riowil.Lib
             this.h = param.H;
         }
         //For Vector3
-        public List<InitialCluster3d> Clusterize(List<ZVector3d> zVectors)
+        public IReadOnlyList<InitialCluster3d> Clusterize(IReadOnlyList<ZVector3d> zVectors)
         {
             Prepare3(zVectors);
 
@@ -137,7 +137,7 @@ namespace Riowil.Lib
         }
 
         //begin Prepare3()
-        private void Prepare3(List<ZVector3d> zVectors)
+        private void Prepare3(IReadOnlyList<ZVector3d> zVectors)
         {
             if (zVectors == null || zVectors.Count == 0)
             {
