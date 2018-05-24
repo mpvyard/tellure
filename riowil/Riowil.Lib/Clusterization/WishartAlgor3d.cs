@@ -131,7 +131,7 @@ namespace Riowil.Lib
             return clusters;
         }
 
-        private int CompareTupleByItem2(Tuple<ZVector3d, double> t1, Tuple<ZVector3d, double> t2)
+        private int CompareTupleByItem2((ZVector3d, double) t1, (ZVector3d, double) t2)
         {
             return t1.Item2.CompareTo(t2.Item2);
         }
@@ -152,10 +152,10 @@ namespace Riowil.Lib
             this.dimension = zVectors[0].List.Count;//количество точек в zвекторе
 
             x.AddRange(zVectors);
-            List<Tuple<ZVector3d, double>> list = new List<Tuple<ZVector3d, double>>();
+            var list = new List<(ZVector3d, double)>();
             for (int i = 0; i < zVectors.Count; i++)
             {
-                Tuple<ZVector3d, double> t = new Tuple<ZVector3d, double>(zVectors[i], dk3(zVectors[i]));
+                (ZVector3d, double) t = (zVectors[i], dk3(zVectors[i]));
                 list.Add(t);
             }
 

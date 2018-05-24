@@ -129,7 +129,7 @@ namespace Riowil.Lib
             return clusters;
 		}
 
-		private int CompareTupleByItem2(Tuple<ZVector, double> t1, Tuple<ZVector, double> t2)
+		private int CompareTupleByItem2((ZVector, double) t1, (ZVector, double) t2)
 		{
 			return t1.Item2.CompareTo(t2.Item2);
 		}
@@ -149,10 +149,10 @@ namespace Riowil.Lib
 			this.dimension = zVectors[0].List.Count;
 
 			x.AddRange(zVectors);
-			List<Tuple<ZVector, double>> list = new List<Tuple<ZVector, double>>();
+			var list = new List<(ZVector, double)>();
 			for (int i = 0; i < zVectors.Count; i++)
 			{
-				Tuple<ZVector, double> t = new Tuple<ZVector, double>(zVectors[i], dk(zVectors[i]));
+				(ZVector, double) t = (zVectors[i], dk(zVectors[i]));
 				list.Add(t);
 			}
 
