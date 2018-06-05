@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="ILLink.Tasks" Version="0.1.5-preview-1461378" />
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.8"></PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0"></PackageReference>
   </ItemGroup>
   
   <ItemGroup>
