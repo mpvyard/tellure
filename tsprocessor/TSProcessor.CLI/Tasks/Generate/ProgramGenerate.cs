@@ -2,45 +2,79 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Numerics;
-using System.Text;
 using Tellure.Lib;
 
 namespace TSProcessor.CLI.Tasks.Generate
 {
     static class Generator
     {
-        public static int Generate(GenerateOptions opts, ILogger logger)
+        static readonly string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "numbers.json");
+        public static int Generate(GenerateOptions opts, ILogger logger, FileWriter writer)
         {
             //TODO: add checks of opts
+            opts.OutFile = opts.OutFile ?? path;
+
+            logger.LogInformation("Operation started...");
+
+            logger.LogInformation("Generate time-series");
+
             var generator = new TimeSeriesGenerator(opts.Sigma, opts.R, opts.B);
-            var y0 = new Vector3(10, 10, 10);
-            var sequence = generator.Generate(y0, opts.Step, opts.Skip, opts.Count);
-            //var sequenceX = sequence.Select(number => number.X);
-            if (opts.Normalize)
+            var y0 = new Vector3(10, -1, -1);
+            var sequence = generator.Generate(y0, opts.Step, opts.Skip + opts.Count)
+                .Skip(opts.Skip);
+
+            if (opts.Dimentions == 1)
             {
-                sequence = sequence.Normalize();
+                Get1dSequence(opts, logger, writer, sequence);
             }
 
-            if (!string.IsNullOrEmpty(opts.OutFile))
+            if (opts.Dimentions == 3)
             {
-                //TODO: check for file format and use different formatters
-                using (var writer = new StreamWriter(opts.OutFile))
-                {
-                    ServiceStack.Text.CsvSerializer.SerializeToWriter(sequence, writer);
-                }
+                Get3dSequence(opts, logger, writer, sequence);
             }
 
-            if (opts.Print)
-            {
-                var output = ServiceStack.Text.CsvSerializer.SerializeToString(sequence);
-                Console.WriteLine(output);
-            }
             //TODO: add write to MongoDb
+            logger.LogInformation("Operation completed");
 #if DEBUG
             Console.ReadLine();
 #endif
             return 0;
+        }
+
+        private static void Get3dSequence(GenerateOptions opts, ILogger logger, FileWriter writer, IEnumerable<Vector3> sequence)
+        {
+            logger.LogInformation("Normalize generated series");
+
+            if (opts.Normalize)
+            {
+                sequence = sequence.Normalize();
+            }
+            logger.LogDebug("Sequence: {sequence}",
+                ServiceStack.Text.CsvSerializer.SerializeToString(sequence));
+
+            logger.LogInformation("Writing to file {file} started", opts.OutFile);
+            writer.Write(sequence, opts.OutFile);
+            logger.LogInformation("Writing to file {file} finished", opts.OutFile);
+        }
+
+        private static void Get1dSequence(GenerateOptions opts, ILogger logger, FileWriter writer, IEnumerable<Vector3> sequence)
+        {
+            logger.LogInformation("Normalize generated series");
+
+            var sequenceX = sequence.Select(number => number.X);
+            if (opts.Normalize)
+            {
+                sequenceX = sequenceX.Normalize();
+            }
+
+            logger.LogDebug("Sequence: {sequence}",
+                ServiceStack.Text.CsvSerializer.SerializeToString(sequenceX));
+
+            logger.LogInformation("Writing to file {file} started", opts.OutFile);
+            writer.Write(sequenceX, opts.OutFile);
+            logger.LogInformation("Writing to file {file} finished", opts.OutFile);
         }
     }
 }

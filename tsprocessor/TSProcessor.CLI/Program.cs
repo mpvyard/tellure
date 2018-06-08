@@ -19,14 +19,21 @@ namespace TSProcessor.CLI
         {
             ServiceProvider serviceProvider = CreateServiceProvider();
             var logger = serviceProvider.GetService<ILogger<Program>>();
+            var writer = serviceProvider.GetService<FileWriter>();
+
+            Clusterizer.AfterClusterize1dSequenceGenerated += afterGeneratedWriteOut<float>;
 
             return Parser.Default.ParseArguments<NormalizeOptions, GenerateOptions, PaintOptions, ClusterizationOptions>(args)
                 .MapResult(
-                (GenerateOptions opts) => Generator.Generate(opts, logger),
+                (GenerateOptions opts) => Generator.Generate(opts, logger, writer),
                 (NormalizeOptions opts) => Normalizer.Normalize(opts, logger),
                 (PaintOptions opts) => Painter.Paint(opts, logger),
-                (ClusterizationOptions opts) => ProgramClusterize3d.Clusterize(opts, logger),
+                (ClusterizationOptions opts) => Clusterizer.Clusterize(opts, logger, writer),
                 errs => HandleParseError(errs, logger));
+            void afterGeneratedWriteOut<T>(IEnumerable <T> sequence)
+            {
+
+            }
         }
 
         private static void ConfigureServices(IServiceCollection serviceCollection)
@@ -41,6 +48,7 @@ namespace TSProcessor.CLI
                 .WriteTo.Console()
                 .CreateLogger();
             serviceCollection.AddLogging(logging => logging.AddSerilog());
+            serviceCollection.AddTransient<FileWriter, FileWriter>();
         }
 
         private static ServiceProvider CreateServiceProvider()
@@ -60,21 +68,6 @@ namespace TSProcessor.CLI
         static double[] ReadSeqence(string path)
         {
             return ServiceStack.Text.CsvSerializer.DeserializeFromString<double[]>(File.ReadAllText(path).Replace(',', '\n'));
-        }
-
-        static void WriteClusters(string path, double[,] clusters)
-        {
-            using (var writer = new StreamWriter(path))
-            {
-                //ServiceStack.Text.CsvSerializer.SerializeToWriter<double[,]>(clusters, writer);
-
-                ServiceStack.Text.JsonSerializer.SerializeToWriter<double[,]>(clusters, writer);
-
-                //var s = ServiceStack.Text.CsvSerializer.SerializeToString<double[,]>(clusters);
-                //writer.Write(s);
-
-                //ServiceStack.Text.CsvSerializer.WriteLateBoundObject(writer, clusters);  
-            }
         }
     }
 }

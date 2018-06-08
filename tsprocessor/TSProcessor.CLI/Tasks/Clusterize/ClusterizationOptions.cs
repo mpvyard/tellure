@@ -9,8 +9,10 @@ namespace TSProcessor.CLI.Tasks.Clusterize
     class ClusterizationOptions
     {
         [Option(Default = new int[] { 1, 1, 1, 1}, Separator = '.')]
-        public int[] From { get; set; }
+        public IEnumerable<int> From { get; set; }
         [Option(Default = new int[] { 10, 10, 10, 10}, Separator = '.')]
-        public int[] To { get; set; }
+        public IEnumerable<int> To { get; set; }
+        [Option(Default = 1)]
+        public int Dimentions { get; set; }
     }
 }

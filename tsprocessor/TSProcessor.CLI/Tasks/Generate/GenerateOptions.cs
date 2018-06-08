@@ -1,4 +1,6 @@
 ﻿using CommandLine;
+using System;
+using System.IO;
 
 namespace TSProcessor.CLI.Tasks.Generate
 {
@@ -16,7 +18,7 @@ namespace TSProcessor.CLI.Tasks.Generate
         public float Step { get; set; }
         [Option('p', Default = 3000, HelpText = "")]
         public int Skip { get; set; }
-        [Option('c', Default = 100000, HelpText = "")]
+        [Option('c', Default = 13500, HelpText = "")]
         public int Count { get; set; }
 
         [Option('o', HelpText = "")]
@@ -24,7 +26,8 @@ namespace TSProcessor.CLI.Tasks.Generate
 
         [Option("normalize", Default = false, HelpText = "")]
         public bool Normalize { get; set; }
-        [Option("print", Default = true, HelpText = "")]
-        public bool Print { get; set; }
+
+        [Option(Default = 1)]
+        public int Dimentions { get; set; }
     }
 }
