@@ -14,38 +14,21 @@ namespace TSProcessor.CLI.Tasks.Clusterize
     public delegate void SequenceHandler<T>(IEnumerable<T> sequence);
     static partial class Clusterizer
     {
-        private const float sigma = 10f;
-        private const float r = 26f;
-        private const float b = 2.666f;
-
-        private const float generationStep = 0.05f;
-        private const int skipCount = 3000;
-        private const int sequenceCount = 13500;//16500
-
-        private static readonly Vector3 Y02 = new Vector3(10, -1, 1);
-
-
         public static event SequenceHandler<float> AfterClusterize1dSequenceGenerated;
         public static event SequenceHandler<Vector3> AfterClusterize3dSequenceGenerated;
-
 
         private static FileWriter fileWriter;
         public static int Clusterize(ClusterizationOptions opts, ILogger logger, FileWriter writer)
         {
             fileWriter = writer;
-            logger.LogInformation("Operation started...");
-
-            logger.LogInformation("Generate time-series");
-            TimeSeriesGenerator lr = new TimeSeriesGenerator(sigma, r, b);
-            IEnumerable<Vector3> sequence = lr.Generate(Y02, generationStep, skipCount + sequenceCount)
-                .Skip(skipCount);
 
             if (opts.Dimentions == 1)
             {
-                logger.LogInformation("Normalize generated series");
-                var series = sequence.Select(vector => vector.X).ToList();
-                series = SeriesNormalizer.Normalize(series).ToList();
-
+                List<float> series;
+                using (var stream = new StreamReader(DefaultParams.path))
+                {
+                    series = ServiceStack.Text.JsonSerializer.DeserializeFromReader<List<float>>(stream);
+                }
                 logger.LogInformation("Start clusterization");
                 ClusterizeAllParallel(series, opts.From.ToArray(), opts.To.ToArray(), logger);
                 logger.LogInformation("Operation completed");
@@ -54,11 +37,21 @@ namespace TSProcessor.CLI.Tasks.Clusterize
 
             if (opts.Dimentions == 3)
             {
-                logger.LogInformation("Normalize generated series");
-                List<Vector3> NormalizedSequence = SeriesNormalizer.Normalize(sequence).ToList();
+                logger.LogInformation("Operation started...");
 
+                logger.LogInformation("Generate time-series");
+                TimeSeriesGenerator lr = new TimeSeriesGenerator(DefaultParams.sigma, DefaultParams.r, DefaultParams.b);
+                IEnumerable<Vector3> sequence = lr.Generate(DefaultParams.Y0, DefaultParams.generationStep, DefaultParams.skipCount + DefaultParams.sequenceCount)
+                    .Skip(DefaultParams.skipCount);
+                logger.LogInformation("Normalize generated series");
+                List<Vector3> series = SeriesNormalizer.Normalize(sequence).ToList();
+                //List<Vector3> series; - deserialization of vector3 is broken out
+                //using (var stream = new StreamReader(DefaultParams.path))
+                //{
+                //    series = ServiceStack.Text.JsonSerializer.DeserializeFromReader<List<Vector3>>(stream);
+                //}
                 logger.LogInformation("Start clusterization");
-                ClusterizeAllParallel(NormalizedSequence, opts.From.ToArray(), opts.To.ToArray(), logger);
+                ClusterizeAllParallel(series, opts.From.ToArray(), opts.To.ToArray(), logger);
                 logger.LogInformation("Operation completed");
                 return 0;
             }

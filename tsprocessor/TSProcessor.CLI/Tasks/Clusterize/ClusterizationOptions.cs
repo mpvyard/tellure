@@ -12,7 +12,7 @@ namespace TSProcessor.CLI.Tasks.Clusterize
         public IEnumerable<int> From { get; set; }
         [Option(Default = new int[] { 10, 10, 10, 10}, Separator = '.')]
         public IEnumerable<int> To { get; set; }
-        [Option(Default = 1)]
+        [Option('d', Default = 1)]
         public int Dimentions { get; set; }
     }
 }

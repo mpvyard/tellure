@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 using Tellure.Lib;
@@ -10,19 +9,17 @@ namespace TSProcessor.CLI.Tasks.Generate
 {
     static class Generator
     {
-        static readonly string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "numbers.json");
         public static int Generate(GenerateOptions opts, ILogger logger, FileWriter writer)
         {
             //TODO: add checks of opts
-            opts.OutFile = opts.OutFile ?? path;
+            opts.OutFile = opts.OutFile ?? DefaultParams.path;
 
             logger.LogInformation("Operation started...");
 
             logger.LogInformation("Generate time-series");
 
             var generator = new TimeSeriesGenerator(opts.Sigma, opts.R, opts.B);
-            var y0 = new Vector3(10, -1, -1);
-            var sequence = generator.Generate(y0, opts.Step, opts.Skip + opts.Count)
+            var sequence = generator.Generate(DefaultParams.Y0, opts.Step, opts.Skip + opts.Count)
                 .Skip(opts.Skip);
 
             if (opts.Dimentions == 1)
