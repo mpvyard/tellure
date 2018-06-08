@@ -12,7 +12,7 @@ namespace TSProcessor.CLI.Tasks.Generate
         public static int Generate(GenerateOptions opts, ILogger logger, FileWriter writer)
         {
             //TODO: add checks of opts
-            opts.OutFile = opts.OutFile ?? DefaultParams.path;
+            opts.OutFile = opts.OutFile ?? DefaultParams.seriesPath;
 
             logger.LogInformation("Operation started...");
 

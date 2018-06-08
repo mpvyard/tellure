@@ -20,17 +20,32 @@ namespace TSProcessor.CLI.Tasks.Clusterize
         private static FileWriter fileWriter;
         public static int Clusterize(ClusterizationOptions opts, ILogger logger, FileWriter writer)
         {
+            opts.SeriesFileName = opts.SeriesFileName ?? DefaultParams.seriesPath;
+            opts.ClustersDirectory = opts.ClustersDirectory ?? DefaultParams.clustersPath;
+
+            if(!File.Exists(opts.SeriesFileName))
+            {
+                logger.LogError("File with series {series} doesn't exist", opts.SeriesFileName);
+                return 1;
+            }
+
+            if(!Directory.Exists(opts.ClustersDirectory))
+            {
+                logger.LogWarning("Directory {dir} doesn't exist, creating", opts.ClustersDirectory);
+                Directory.CreateDirectory(opts.ClustersDirectory);
+            }
+
             fileWriter = writer;
 
             if (opts.Dimentions == 1)
             {
                 List<float> series;
-                using (var stream = new StreamReader(DefaultParams.path))
+                using (var stream = new StreamReader(opts.SeriesFileName))
                 {
                     series = ServiceStack.Text.JsonSerializer.DeserializeFromReader<List<float>>(stream);
                 }
                 logger.LogInformation("Start clusterization");
-                ClusterizeAllParallel(series, opts.From.ToArray(), opts.To.ToArray(), logger);
+                ClusterizeAllParallel(series, opts.From.ToArray(), opts.To.ToArray(), logger, opts.ClustersDirectory);
                 logger.LogInformation("Operation completed");
                 return 0;
             }
@@ -46,12 +61,12 @@ namespace TSProcessor.CLI.Tasks.Clusterize
                 logger.LogInformation("Normalize generated series");
                 List<Vector3> series = SeriesNormalizer.Normalize(sequence).ToList();
                 //List<Vector3> series; - deserialization of vector3 is broken out
-                //using (var stream = new StreamReader(DefaultParams.path))
+                //using (var stream = new StreamReader(opts.SeriesFileName))
                 //{
                 //    series = ServiceStack.Text.JsonSerializer.DeserializeFromReader<List<Vector3>>(stream);
                 //}
                 logger.LogInformation("Start clusterization");
-                ClusterizeAllParallel(series, opts.From.ToArray(), opts.To.ToArray(), logger);
+                ClusterizeAllParallel(series, opts.From.ToArray(), opts.To.ToArray(), logger, opts.ClustersDirectory);
                 logger.LogInformation("Operation completed");
                 return 0;
             }
@@ -59,7 +74,7 @@ namespace TSProcessor.CLI.Tasks.Clusterize
             throw new ArgumentOutOfRangeException(nameof(opts.Dimentions));
         }
 
-        private static void ClusterizeAllParallel(IReadOnlyList<float> series, int[] from, int[] to, ILogger logger)
+        private static void ClusterizeAllParallel(IReadOnlyList<float> series, int[] from, int[] to, ILogger logger, string clustersDir)
         {
             Wishart.GenerateTemplateForWishart(from, to).AsParallel().ForAll(template =>
             {
@@ -70,20 +85,18 @@ namespace TSProcessor.CLI.Tasks.Clusterize
                 var clusters = Clusterize(vectors);
 
                 logger.LogInformation("Start writing results for {template} to file", stringTemplate);
-                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    "clusters", $"{stringTemplate}.json");
+                var path = Path.Combine(clustersDir, $"{stringTemplate}.json");
                 fileWriter.Write(clusters, path);
 
                 var centers = clusters.Select(cluster => cluster.Centr).ToList();
-                var pathCenters = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    "clusters", $"{stringTemplate}.centers.json");
+                var pathCenters = Path.Combine(clustersDir, $"{stringTemplate}.centers.json");
                 fileWriter.Write(centers, pathCenters);
                 logger.LogInformation("Writing finished for {template}", stringTemplate);
             });
         }
 
 
-        private static void ClusterizeAllParallel(IReadOnlyList<Vector3> series, int[] from, int[] to, ILogger logger)
+        private static void ClusterizeAllParallel(IReadOnlyList<Vector3> series, int[] from, int[] to, ILogger logger, string clustersDir)
         {
             Wishart.GenerateTemplateForWishart(from, to).AsParallel().ForAll(template =>
             {
@@ -94,13 +107,11 @@ namespace TSProcessor.CLI.Tasks.Clusterize
                 var clusters = Clusterize(vectors);
 
                 logger.LogInformation("Start writing results for {template} to file", stringTemplate);
-                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    "clusters", $"{stringTemplate}.json");
+                var path = Path.Combine(clustersDir, $"{stringTemplate}.json");
                 fileWriter.Write(clusters, path);
 
                 var centers = clusters.Select(cluster => cluster.Centr).ToList();
-                var pathCenters = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-                    "clusters", $"{stringTemplate}.centers.json");
+                var pathCenters = Path.Combine(clustersDir, $"{stringTemplate}.centers.json");
                 fileWriter.Write(centers, pathCenters);
                 logger.LogInformation("Writing finished for {template}", stringTemplate);
             });

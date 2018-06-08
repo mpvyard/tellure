@@ -8,9 +8,9 @@ namespace TSProcessor.CLI.Tasks.Paint
     [Verb("paint")]
     class PaintOptions
     {
-        [Option('s', Required = true, HelpText = "")]
+        [Option('s', HelpText = "")]
         public string SeriesFileName { get; set; }
-        [Option('c', Required = true, HelpText = "")]
+        [Option('c', HelpText = "")]
         public string ClustersDirectory { get; set; }
         [Option('e', Default = 0.01)]
         public double Error { get; set; }

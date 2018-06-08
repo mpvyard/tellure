@@ -21,19 +21,13 @@ namespace TSProcessor.CLI
             var logger = serviceProvider.GetService<ILogger<Program>>();
             var writer = serviceProvider.GetService<FileWriter>();
 
-            Clusterizer.AfterClusterize1dSequenceGenerated += afterGeneratedWriteOut<float>;
-
             return Parser.Default.ParseArguments<NormalizeOptions, GenerateOptions, PaintOptions, ClusterizationOptions>(args)
                 .MapResult(
                 (GenerateOptions opts) => Generator.Generate(opts, logger, writer),
                 (NormalizeOptions opts) => Normalizer.Normalize(opts, logger),
-                (PaintOptions opts) => Painter.Paint(opts, logger),
+                (PaintOptions opts) => Painter.Paint(opts, writer, logger),
                 (ClusterizationOptions opts) => Clusterizer.Clusterize(opts, logger, writer),
                 errs => HandleParseError(errs, logger));
-            void afterGeneratedWriteOut<T>(IEnumerable <T> sequence)
-            {
-
-            }
         }
 
         private static void ConfigureServices(IServiceCollection serviceCollection)
@@ -63,11 +57,6 @@ namespace TSProcessor.CLI
         {
             //TODO: add handling
             throw new NotImplementedException();
-        }
-
-        static double[] ReadSeqence(string path)
-        {
-            return ServiceStack.Text.CsvSerializer.DeserializeFromString<double[]>(File.ReadAllText(path).Replace(',', '\n'));
         }
     }
 }

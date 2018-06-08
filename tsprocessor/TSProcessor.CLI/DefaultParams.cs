@@ -18,8 +18,13 @@ namespace TSProcessor.CLI
 
         public static readonly Vector3 Y0 = new Vector3(10, -1, 1);
 
-        public static readonly string path
+        public static readonly string seriesPath
             = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "numbers.json");
 
+        public static readonly string paintPath
+            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "paint.json");
+
+        public static readonly string clustersPath
+            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "clusters");
     }
 }
