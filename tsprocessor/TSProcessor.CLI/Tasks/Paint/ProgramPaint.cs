@@ -7,10 +7,11 @@ using System.Text;
 using ILGPU.Runtime;
 using ILGPU.Runtime.CPU;
 using System.Linq;
+using ILGPU.Runtime.Cuda;
 
 namespace TSProcessor.CLI.Tasks.Paint
 {
-    struct Template
+    public struct Template
     {
         public int Distance1;
         public int Distance2;
@@ -52,9 +53,20 @@ namespace TSProcessor.CLI.Tasks.Paint
                     templates.Add(template);
                     clusters.Add(templateClusters);
                 }
-                //var data = Process(new Template { Distance1 = 1, Distance2 = 1, Distance3 = 1, Distance4 = 1 }, series, clusters);
             }
-            var result = PaintCPU(templates, clusters, series, args.Error).ToArray();
+            var result = Process(templates, series, clusters, args.Error);
+
+            //var result = new int[series.Length];
+            //for (int i = 0; i < templates.Count; i++)
+            //{
+            //    var data = Process(templates[i], series, clusters[i], args.Error);
+            //    for (int j = 0; j < data.Length; j++)
+            //    {
+            //        result[j] += data[j]; 
+            //    }
+            //}
+
+            //var result = PaintCPU(templates, clusters, series, args.Error).ToArray();
             writer.Write(result, DefaultParams.paintPath);
             return 0;
         }
@@ -79,32 +91,10 @@ namespace TSProcessor.CLI.Tasks.Paint
             };
         }
 
-        //private static int[] Process(Template tempate, float[] series, float[][] clusters)
-        //{
-        //    using (var context = new Context())
-        //    {
-        //        using (var accelerator = new CPUAccelerator(context))
-        //        {
-        //            var paintKernel = accelerator.LoadAutoGroupedStreamKernel<Index, Template, ArrayView<float>, ArrayView2D<float>, ArrayView<int>>(PaintKernel);
-        //            using (var seriesBuffer = accelerator.Allocate<float>(series.Count()))
-        //            using (var buffer = accelerator.Allocate<int>(series.Count()))
-        //            {
-        //                seriesBuffer.CopyFrom(series, 0, 0, series.Count());
-        //                paintKernel(series.Count(), tempate, seriesBuffer, buffer);
-
-        //                accelerator.Synchronize();
-
-        //                var data = buffer.GetAsArray();
-        //                return data;
-        //            }
-        //        }
-        //    }
-        //}
-
         public static ReadOnlySpan<int> PaintCPU(IEnumerable<Template> templates,
             List<float[][]> clusters,
             float[] series,
-            double error)
+            float error)
         {
             Span<int> seriesHeatMap = new int[series.Length];
             //TODO: make it run parallel for each template
@@ -151,15 +141,164 @@ namespace TSProcessor.CLI.Tasks.Paint
             }
             return Math.Sqrt(dist);
         }
+        #region ProcessGPUPartial
+        private static int[] Process(Template tempate, float[] series, float[][] clusters, float error)
+        {
+            var clustersHeight = clusters.Length;
+            var clustersWidth = clusters[0].Length;
+            var clusters2d = new float[clustersHeight, clustersWidth];
+            for (int i = 0; i < clustersHeight; i++)
+            {
+                for (int j = 0; j < clustersWidth; j++)
+                {
+                    clusters2d[i, j] = clusters[i][j];
+                }
+            }
+
+
+            using (var context = new Context())
+            {
+                using (var accelerator = new CudaAccelerator(context))
+                {
+                    var paintKernel = accelerator.LoadAutoGroupedStreamKernel<Index, Template, ArrayView<float>, ArrayView2D<float>, ArrayView<int>, float>(PaintKernel);
+                    using (var seriesBuffer = accelerator.Allocate<float>(series.Count()))
+                    using (var clustersBuffer = accelerator.Allocate<float>(clustersHeight, clustersWidth))
+                    using (var buffer = accelerator.Allocate<int>(series.Count()))
+                    {
+                        seriesBuffer.CopyFrom(series, 0, 0, series.Count());
+                        clustersBuffer.CopyFrom(clusters2d, new Index2(0, 0), new Index2(0, 0), new Index2(clustersHeight, clustersWidth));
+                        paintKernel(clustersHeight, tempate, seriesBuffer, clustersBuffer, buffer, error);
+
+                        accelerator.Synchronize();
+
+                        var data = buffer.GetAsArray();
+                        return data;
+                    }
+                }
+            }
+        }
 
         private static void PaintKernel(
-            Index index,
+            Index i,
             Template template,
             ArrayView<float> series,
             ArrayView2D<float> clusters,
-            ArrayView<int> outPutHeatMap)
+            ArrayView<int> outPutHeatMap,
+            float error)
         {
-
+                //TODO: refactor this peace of vector creation
+            for (int i5 = template.Distance1 + template.Distance2 + template.Distance3 + template.Distance4,
+                i4 = i5 - template.Distance4,
+                i3 = i5 - template.Distance4 - template.Distance3,
+                i2 = i5 - template.Distance4 - template.Distance3 - template.Distance2,
+                i1 = i5 - template.Distance4 - template.Distance3 - template.Distance2 - template.Distance1;
+                i5 < series.Length - 1; i5++, i4++, i3++, i2++, i1++)
+            {
+                if (Math.Abs(series[i5] - clusters[i, 4]) < 0.1)
+                {
+                    var vector = new float[] { series[i1], series[i2], series[i3], series[i4], series[i5] };
+                    var cluster = new float[] { clusters[i, 0], clusters[i, 1], clusters[i, 2], clusters[i, 3], clusters[i, 4] };
+                    double distance = Distance(vector, cluster);
+                    if (distance <= error)
+                    {
+                        outPutHeatMap[i1]++;
+                        outPutHeatMap[i2]++;
+                        outPutHeatMap[i3]++;
+                        outPutHeatMap[i4]++;
+                    }
+                }
+            }
         }
+        #endregion
+        #region ProcessGPUFull
+        private static int[] Process(IList<Template> tempate, float[] series, IList<float[][]> clusterCollection, float error)
+        {
+            var templatesCount = clusterCollection.Count;
+            var clustersCount = clusterCollection.Max(x => x.Length);
+            var pointsInClusters = clusterCollection[0][0].Length;
+            float[,,] clsts = new float[templatesCount, clustersCount, pointsInClusters];
+            for(int k = 0; k < templatesCount; k++)
+            {
+                for (int i = 0; i < clustersCount; i++)
+                {
+                    if(i >= clusterCollection[k].Length)
+                    {
+                        break;
+                    }
+
+                    for (int j = 0; j < pointsInClusters; j++)
+                    {
+                        clsts[k, i, j] = clusterCollection[k][i][j];
+                    }
+                }
+            }
+
+            using (var context = new Context())
+            {
+                using (var accelerator = new CPUAccelerator(context))
+                {
+                    var paintKernel = accelerator.LoadAutoGroupedStreamKernel<Index2, ArrayView<Template>, ArrayView<float>, ArrayView3D<float>, ArrayView<int>, float>(PaintKernel2d);
+                    using (var seriesBuffer = accelerator.Allocate<float>(series.Count()))
+                    using (var templatesBuffer = accelerator.Allocate<Template>(templatesCount))
+                    using (var clustersBuffer = accelerator.Allocate<float>(templatesCount, clustersCount, pointsInClusters))
+                    using (var buffer = accelerator.Allocate<int>(series.Count()))
+                    {
+                        seriesBuffer.CopyFrom(series, 0, 0, series.Count());
+                        clustersBuffer.CopyFrom(clsts, new Index3(0, 0, 0), new Index3(0, 0, 0), new Index3(templatesCount, clustersCount, pointsInClusters));
+                        paintKernel(new Index2(templatesCount, clustersCount), templatesBuffer, seriesBuffer, clustersBuffer, buffer, error);
+
+                        accelerator.Synchronize();
+
+                        var data = buffer.GetAsArray();
+                        return data;
+                    }
+                }
+            }
+        }
+        private static void PaintKernel2d(
+           Index2 i,
+           ArrayView<Template> templates,
+           ArrayView<float> series,
+           ArrayView3D<float> clusters,
+           ArrayView<int> outPutHeatMap,
+           float error)
+        {
+            var template = templates[i.X];
+            var cluster = new float[] { clusters[i.X, i.Y, 0], clusters[i.X, i.Y, 1], clusters[i.X, i.Y, 2], clusters[i.X, i.Y, 3], clusters[i.X, i.Y, 4] };
+
+            bool isExtra = true;
+            for (int j = 0; j < cluster.Length; j++)
+            {
+                if(cluster[j] != 0f)
+                {
+                    isExtra = false;
+                }
+            }
+
+            if (!isExtra)
+            {
+                for (int i5 = template.Distance1 + template.Distance2 + template.Distance3 + template.Distance4,
+                    i4 = i5 - template.Distance4,
+                    i3 = i5 - template.Distance4 - template.Distance3,
+                    i2 = i5 - template.Distance4 - template.Distance3 - template.Distance2,
+                    i1 = i5 - template.Distance4 - template.Distance3 - template.Distance2 - template.Distance1;
+                    i5 < series.Length - 1; i5++, i4++, i3++, i2++, i1++)
+                {
+                    if (Math.Abs(series[i5] - clusters[i.X, i.Y, 4]) < 0.1)
+                    {
+                        var vector = new float[] { series[i1], series[i2], series[i3], series[i4], series[i5] };
+                        double distance = Distance(vector, cluster);
+                        if (distance <= error)
+                        {
+                            outPutHeatMap[i1]++;
+                            outPutHeatMap[i2]++;
+                            outPutHeatMap[i3]++;
+                            outPutHeatMap[i4]++;
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
     }
 }

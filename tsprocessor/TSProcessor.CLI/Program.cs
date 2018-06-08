@@ -1,4 +1,7 @@
 ﻿using CommandLine;
+using ILGPU;
+using ILGPU.Runtime;
+using ILGPU.Runtime.Cuda;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -41,8 +44,11 @@ namespace TSProcessor.CLI
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
                 .CreateLogger();
+
             serviceCollection.AddLogging(logging => logging.AddSerilog());
             serviceCollection.AddTransient<FileWriter, FileWriter>();
+            serviceCollection.AddTransient<Context, Context>();
+            serviceCollection.AddTransient<Accelerator, CudaAccelerator>();
         }
 
         private static ServiceProvider CreateServiceProvider()

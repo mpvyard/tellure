@@ -12,7 +12,7 @@ namespace TSProcessor.CLI.Tasks.Paint
         public string SeriesFileName { get; set; }
         [Option('c', HelpText = "")]
         public string ClustersDirectory { get; set; }
-        [Option('e', Default = 0.01)]
-        public double Error { get; set; }
+        [Option('e', Default = 0.01f)]
+        public float Error { get; set; }
     }
 }
