@@ -54,17 +54,17 @@ namespace TSProcessor.CLI.Tasks.Paint
                     clusters.Add(templateClusters);
                 }
             }
-            var result = Process(templates, series, clusters, args.Error);
+            //var result = Process(templates, series, clusters, args.Error);
 
-            //var result = new int[series.Length];
-            //for (int i = 0; i < templates.Count; i++)
-            //{
-            //    var data = Process(templates[i], series, clusters[i], args.Error);
-            //    for (int j = 0; j < data.Length; j++)
-            //    {
-            //        result[j] += data[j]; 
-            //    }
-            //}
+            var result = new int[series.Length];
+            for (int i = 0; i < templates.Count; i++)
+            {
+                var data = Process(templates[i], series, clusters[i], args.Error);
+                for (int j = 0; j < data.Length; j++)
+                {
+                    result[j] += data[j];
+                }
+            }
 
             //var result = PaintCPU(templates, clusters, series, args.Error).ToArray();
             writer.Write(result, DefaultParams.paintPath);
@@ -91,16 +91,15 @@ namespace TSProcessor.CLI.Tasks.Paint
             };
         }
 
-        public static ReadOnlySpan<int> PaintCPU(IEnumerable<Template> templates,
+        public static ReadOnlySpan<int> PaintCPU(IList<Template> templates,
             List<float[][]> clusters,
             float[] series,
             float error)
         {
             Span<int> seriesHeatMap = new int[series.Length];
-            //TODO: make it run parallel for each template
-            int i = 0;
-            foreach (var template in templates)
+            for (int i = 0; i < templates.Count; i++)
             {
+                var template = templates[i];
                 foreach (var cluster in clusters[i])
                 {
                     //TODO: refactor this peace of vector creation
@@ -158,7 +157,7 @@ namespace TSProcessor.CLI.Tasks.Paint
 
             using (var context = new Context())
             {
-                using (var accelerator = new CudaAccelerator(context))
+                using (var accelerator = new CPUAccelerator(context))
                 {
                     var paintKernel = accelerator.LoadAutoGroupedStreamKernel<Index, Template, ArrayView<float>, ArrayView2D<float>, ArrayView<int>, float>(PaintKernel);
                     using (var seriesBuffer = accelerator.Allocate<float>(series.Count()))
