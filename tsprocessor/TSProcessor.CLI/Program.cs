@@ -61,8 +61,14 @@ namespace TSProcessor.CLI
 
         private static int HandleParseError(IEnumerable<Error> errs, Microsoft.Extensions.Logging.ILogger logger)
         {
-            //TODO: add handling
-            throw new NotImplementedException();
+            foreach (var error in errs)
+            {
+                logger.LogError("Error occured with parsing arguments. {error}", error);
+            }
+#if DEBUG
+            Console.ReadKey();
+#endif
+            return 1;
         }
     }
 }
