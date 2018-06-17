@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using TSProcessor.CLI.Tasks.Clusterize;
+using TSProcessor.CLI.Tasks.Forecast;
 using TSProcessor.CLI.Tasks.Generate;
 using TSProcessor.CLI.Tasks.Normalize;
 using TSProcessor.CLI.Tasks.Paint;
@@ -24,12 +25,13 @@ namespace TSProcessor.CLI
             var logger = serviceProvider.GetService<ILogger<Program>>();
             var writer = serviceProvider.GetService<FileWriter>();
 
-            return Parser.Default.ParseArguments<NormalizeOptions, GenerateOptions, PaintOptions, ClusterizationOptions>(args)
+            return Parser.Default.ParseArguments<NormalizeOptions, GenerateOptions, PaintOptions, ClusterizationOptions, ForecastOptions>(args)
                 .MapResult(
                 (GenerateOptions opts) => Generator.Generate(opts, logger, writer),
                 (NormalizeOptions opts) => Normalizer.Normalize(opts, logger),
                 (PaintOptions opts) => Painter.Paint(opts, writer, logger),
                 (ClusterizationOptions opts) => Clusterizer.Clusterize(opts, logger, writer),
+                (ForecastOptions opts) => Forecaster.Forecast(opts, writer, logger),
                 errs => HandleParseError(errs, logger));
         }
 

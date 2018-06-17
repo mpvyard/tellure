@@ -31,8 +31,6 @@ namespace Tellure.Algorithms.Painting
                         {
                             var vector = new float[] { series[i1], series[i2], series[i3], series[i4], series[i5] };
                             double distance = DistanceCalculator.Distance(vector, cluster);
-                            //TODO: check that i5 is good enough to forecast,
-                            //if it is - check that template itself is about series 
                             if (distance <= error)
                             {
                                 seriesHeatMap[i1]++;

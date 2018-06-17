@@ -1,15 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Text;
 using Tellure.Algorithms;
-using Tellure.Algorithms.Painting;
+using Tellure.Algorithms.Forecasting;
 
-namespace TSProcessor.CLI.Tasks.Paint
+namespace TSProcessor.CLI.Tasks.Forecast
 {
-    static class Painter
+    class Forecaster
     {
-        public static int Paint(PaintOptions args, FileWriter writer, ILogger logger)
+        public static int Forecast(ForecastOptions args, FileWriter writer, ILogger logger)
         {
             args.SeriesFileName = args.SeriesFileName ?? DefaultParams.seriesPath;
             args.ClustersDirectory = args.ClustersDirectory ?? DefaultParams.clustersPath;
@@ -42,13 +43,9 @@ namespace TSProcessor.CLI.Tasks.Paint
                     clusters.Add(templateClusters);
                 }
             }
-            //int[] result = Process(templates, clusters, series, args.Error);
-
-            int[] result = AcceleratorPainter.Paint(templates, clusters, series, args.Error);
-
-            //int[] result = CPUPainter.Paint(templates, clusters, series, args.Error).ToArray();
-            writer.Write(result, DefaultParams.paintPath);
+            var results = SimpleForecaster.Forecast(templates, clusters, series, args.Error);
+            writer.Write(results, DefaultParams.forecastPath);
             return 0;
-        }
+        }        
     }
 }

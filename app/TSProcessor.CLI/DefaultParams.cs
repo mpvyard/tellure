@@ -24,6 +24,9 @@ namespace TSProcessor.CLI
         public static readonly string paintPath
             = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "paint.json");
 
+        public static readonly string forecastPath
+            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "forecast.json");
+
         public static readonly string clustersPath
             = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "clusters");
     }
