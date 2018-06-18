@@ -44,6 +44,9 @@ namespace TSProcessor.CLI.Tasks.Forecast
                 }
             }
             var results = SimpleForecaster.Forecast(templates, clusters, series, args.Error);
+            var (rmse, nonpred) = SimpleForecaster.CalculateRMSE(results, series);
+            logger.LogInformation("RMSE = {rmse}", rmse);
+            logger.LogInformation("Non predicted points = {nonpred}", nonpred);
             writer.Write(results, DefaultParams.forecastPath);
             return 0;
         }        

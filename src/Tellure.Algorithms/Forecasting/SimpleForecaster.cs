@@ -11,13 +11,13 @@ namespace Tellure.Algorithms.Forecasting
             IList<float> sequence,
             float error)
         {
-            var result = new List<float>();
-            var clustersCount = new int[sequence.Count - 1000];
+            var result = new float[sequence.Count];
+            var clustersCount = new int[sequence.Count];
             int multiplier = 1;// Convert.ToInt32(textBox7.Text);
 
             for (int i = 0; i < 1000; i++)
             {
-                result.Add(sequence[i]);
+                result[i] = sequence[i];
             }
 
             int a1 = 1, b1 = 1, c1 = 1, d1 = 1;
@@ -65,19 +65,19 @@ namespace Tellure.Algorithms.Forecasting
                     }
                 }
 
-                result.Add(currResult);
+                result[i] = currResult;
             }
 
             return result;
         }
 
-        public static void CalculateRMSE(IList<float> result, IList<float> sequence)
+        public static (double, int) CalculateRMSE(IList<float> result, IList<float> sequence)
         {
             int count = 0, nonpred = 0;
             double mse = 0;
             for (int i = 1000; i < result.Count; i++)
             {
-                if (!Double.IsNaN(result[i]))
+                if (!Single.IsNaN(result[i]))
                 {
                     mse += Math.Pow(result[i] - sequence[i], 2);
                     count++;
@@ -89,7 +89,7 @@ namespace Tellure.Algorithms.Forecasting
             }
             mse = mse / count;
             double rmse = Math.Sqrt(mse) * 100;
-
+            return (rmse, nonpred);
             //MessageBox.Show("RMSE:\n" + Convert.ToString(rmse) + "%\nNon-pred.:\n" + Convert.ToString(nonpred));
         }
 
