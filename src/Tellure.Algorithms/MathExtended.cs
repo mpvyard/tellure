@@ -7,17 +7,6 @@ namespace Tellure.Algorithms
     public static class MathExtended
     {
         public static double MAX_DIV = 0.05;
-        public static double Distance(IReadOnlyList<float> l1, IReadOnlyList<float> l2)
-        {
-            double sum = 0;
-
-            for (int i = 0; i < l1.Count; i++)
-            {
-                double dif = l1[i] - l2[i];
-                sum += dif * dif;
-            }
-            return Math.Sqrt(sum);
-        }
 
         public static double AbsDivergence(double value1, double value2)
         {
@@ -31,18 +20,25 @@ namespace Tellure.Algorithms
             return dif * dif;
         }
 
-        //For Vector3
-        public static double Distance3(IReadOnlyList<Vector3> l1, IReadOnlyList<Vector3> l2)
+        public static (double, int) CalculateRMSE(IList<float> result, IList<float> sequence)
         {
-            double sum = 0;
-
-            for (int i = 0; i < l1.Count; i++)
+            int count = 0, nonpred = 0;
+            double mse = 0;
+            for (int i = 1000; i < result.Count; i++)
             {
-                double dif = Vector3.Distance(l1[i],l2[i]);
-                sum += dif * dif;
+                if (!Single.IsNaN(result[i]))
+                {
+                    mse += Math.Pow(result[i] - sequence[i], 2);
+                    count++;
+                }
+                else
+                {
+                    nonpred++;
+                }
             }
-
-            return Math.Sqrt(sum);
+            mse = mse / count;
+            double rmse = Math.Sqrt(mse);
+            return (rmse, nonpred);
         }
     }
 }

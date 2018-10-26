@@ -176,7 +176,7 @@ namespace Tellure.Algorithms
             {
                 if (i != index)
                 {
-                    dictance.Add(MathExtended.Distance3(xi.List, x[i].List));
+                    dictance.Add(DistanceCalculator.Distance3(xi.List, x[i].List));
                 }
             }
             dictance.Sort();
@@ -213,7 +213,7 @@ namespace Tellure.Algorithms
             double dK = distance[i];
             for (int j = 0; j < i; j++)
             {
-                double dij = MathExtended.Distance3(x[i].List, x[j].List);
+                double dij = DistanceCalculator.Distance3(x[i].List, x[j].List);
                 double uj = dij <= dK ? dij : 0.0;
                 U.Add(uj);
             }

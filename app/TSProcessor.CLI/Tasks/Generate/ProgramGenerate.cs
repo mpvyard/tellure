@@ -19,8 +19,7 @@ namespace TSProcessor.CLI.Tasks.Generate
             logger.LogInformation("Generate time-series");
 
             var generator = new TimeSeriesGenerator(opts.Sigma, opts.R, opts.B);
-            var sequence = generator.Generate(DefaultParams.Y0, opts.Step, opts.Skip + opts.Count)
-                .Skip(opts.Skip);
+            var sequence = generator.Generate(DefaultParams.Y0, opts.Step, opts.Skip + opts.Count);
 
             if (opts.Dimentions == 1)
             {
@@ -31,7 +30,6 @@ namespace TSProcessor.CLI.Tasks.Generate
             {
                 Get3dSequence(opts, logger, writer, sequence);
             }
-
             //TODO: add write to MongoDb
             logger.LogInformation("Operation completed");
 #if DEBUG
@@ -48,6 +46,8 @@ namespace TSProcessor.CLI.Tasks.Generate
             {
                 sequence = sequence.Normalize();
             }
+            sequence = sequence.Skip(opts.Skip);
+
             logger.LogDebug("Sequence: {sequence}",
                 ServiceStack.Text.CsvSerializer.SerializeToString(sequence));
 
@@ -65,6 +65,7 @@ namespace TSProcessor.CLI.Tasks.Generate
             {
                 sequenceX = sequenceX.Normalize();
             }
+            sequenceX = sequenceX.Skip(opts.Skip);
 
             logger.LogDebug("Sequence: {sequence}",
                 ServiceStack.Text.CsvSerializer.SerializeToString(sequenceX));
