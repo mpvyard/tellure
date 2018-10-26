@@ -1,104 +1,108 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Tellure.Algorithms.Forecasting
 {
+    public delegate void ForecastHandler();
     public class SimpleForecaster
     {
-        public static IList<float> Forecast(IList<Template> templates,
-            IList<float[][]> clusters,
-            IList<float> sequence,
-            float error)
-        {
-            var result = new float[sequence.Count];
-            var clustersCount = new int[sequence.Count];
-            int multiplier = 1;// Convert.ToInt32(textBox7.Text);
+        public static event ForecastHandler OnPointForecasted;
 
-            for (int i = 0; i < 1000; i++)
+        public static IList<float> ForecastSeries(IList<Template> templates,
+            IList<float[][]> clusters,
+            ReadOnlySpan<float> data,
+            float error,
+            int steps)
+        {
+            var results = Enumerable.Repeat(float.NaN, data.Length).ToArray();
+
+            int maxLength = templates.Max(template => template.Distance1 + template.Distance2 + template.Distance3 + template.Distance4) * 2;
+            for (int i = maxLength; i < data.Length - steps; i++)
             {
-                result[i] = sequence[i];
+                float res = ForecastPoint(templates, clusters, data.Slice(i - maxLength, maxLength), error, steps);
+                OnPointForecasted();
+                results[i + steps] = res;
             }
 
-            int a1 = 1, b1 = 1, c1 = 1, d1 = 1;
-            int a2 = 10, b2 = 10, c2 = 10, d2 = 10;
+            return results;
+        }
 
-            for (int i = 1000; i < sequence.Count; i++)
+        public static float ForecastPoint(IList<Template> templates,
+            IList<float[][]> clusters,
+            ReadOnlySpan<float> data,
+            float error,
+            int steps = 1)
+        {
+            Span<float> tmp = new float[data.Length + steps - 1];
+            data.CopyTo(tmp);
+
+            for (int i = 1; i < steps; i++)
             {
-                float currDistance = Single.MaxValue;
-                float currResult = Single.NaN;
+                // -1 Because array indexing from 0
+                tmp[data.Length + i - 1] = ForecastNext(templates, clusters, tmp.Slice(0, data.Length + i - 1), error);
+            }
 
-                for (int a = a1; a <= a2; a++)
+            var forecast = ForecastNext(templates, clusters, tmp, error);
+            return forecast;
+        }
+
+        // Forecast one point further
+        private static float ForecastNext(
+            IList<Template> templates,
+            IList<float[][]> clusters,
+            ReadOnlySpan<float> tmp,
+            float error)
+        {
+            float forecastedPoint = float.NaN;
+            float forecastintDistance = float.MaxValue;
+            int clustersCount = 0;
+
+            var cnt = tmp.Length;
+            var realVectorData = new float[4];
+
+            foreach (var template in templates)
+            {
+                int idx4 = cnt - template.Distance4,
+                    idx3 = idx4 - template.Distance3,
+                    idx2 = idx3 - template.Distance2,
+                    idx1 = idx2 - template.Distance1;
+
+                realVectorData[0] = tmp[idx1];
+                realVectorData[1] = tmp[idx2];
+                realVectorData[2] = tmp[idx3];
+                realVectorData[3] = tmp[idx4];
+
+                var clustersOfTemplate = clusters[templateToIndex(template)];
+
+                foreach (var cluster in clustersOfTemplate)
                 {
-                    for (int b = b1; b <= b2; b++)
+                    if (DistanceCalculator.Distance(realVectorData, cluster) < error)
                     {
-                        for (int c = c1; c <= c2; c++)
+                        clustersCount++;
+
+                        if (DistanceCalculator.Distance(realVectorData, cluster) < forecastintDistance)
                         {
-                            for (int d = d1; d <= d2; d++)
-                            {
-                                var vector = new float[4];
-
-                                vector[0] = sequence[i - Math.Abs((-d - c - b - a) * multiplier)];
-                                vector[1] = sequence[i - Math.Abs((-d - c - b) * multiplier)];
-                                vector[2] = sequence[i - Math.Abs((-d - c) * multiplier)];
-                                vector[3] = sequence[i - Math.Abs((-d * multiplier))];
-
-                                float[][] currPattern = clusters[((a - 1) * 1000) +
-                                                                      ((b - 1) * 100) +
-                                                                      ((c - 1) * 10) +
-                                                                      ((d - 1))];
-
-                                for (int k = 0; k < currPattern.Length; k++)
-                                {
-                                    if (distance(vector, currPattern[k]) < error)
-                                    {
-                                        clustersCount[i]++;
-                                        if (distance(vector, currPattern[k]) < currDistance)
-                                        {
-                                            currDistance = distance(vector, currPattern[k]);
-                                            currResult = currPattern[k][4];
-                                        }
-                                    }
-                                }
-                            }
+                            forecastintDistance = DistanceCalculator.Distance(realVectorData, cluster);
+                            forecastedPoint = cluster[4];
                         }
                     }
                 }
-
-                result[i] = currResult;
             }
 
-            return result;
-        }
+            return forecastedPoint;
+            //return (currResult, clustersCount);
 
-        public static (double, int) CalculateRMSE(IList<float> result, IList<float> sequence)
-        {
-            int count = 0, nonpred = 0;
-            double mse = 0;
-            for (int i = 1000; i < result.Count; i++)
+            // additional local functions
+            int templateToIndex(Template tpl)
             {
-                if (!Single.IsNaN(result[i]))
-                {
-                    mse += Math.Pow(result[i] - sequence[i], 2);
-                    count++;
-                }
-                else
-                {
-                    nonpred++;
-                }
+                // TODO: replace -1 with the lowest template distance-values
+                return (tpl.Distance1 - 1) * 1000 +
+                        (tpl.Distance2 - 1) * 100 +
+                        (tpl.Distance3 - 1) * 10 +
+                        (tpl.Distance4 - 1);
             }
-            mse = mse / count;
-            double rmse = Math.Sqrt(mse) * 100;
-            return (rmse, nonpred);
-            //MessageBox.Show("RMSE:\n" + Convert.ToString(rmse) + "%\nNon-pred.:\n" + Convert.ToString(nonpred));
-        }
-
-        public static float distance(float[] vec1, float[] vec2)
-        {
-            return (float)Math.Sqrt(Math.Pow(vec1[0] - vec2[0], 2) +
-                             Math.Pow(vec1[1] - vec2[1], 2) +
-                             Math.Pow(vec1[2] - vec2[2], 2) +
-                             Math.Pow(vec1[3] - vec2[3], 2));
         }
     }
 }

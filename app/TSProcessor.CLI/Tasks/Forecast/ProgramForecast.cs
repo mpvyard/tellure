@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using ShellProgressBar;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 using Tellure.Algorithms;
 using Tellure.Algorithms.Forecasting;
 
@@ -33,6 +34,7 @@ namespace TSProcessor.CLI.Tasks.Forecast
             }
             List<float[][]> clusters = new List<float[][]>();
             List<Template> templates = new List<Template>();
+            logger.LogInformation("Reading clusters...");
             foreach (var file in Directory.GetFiles(args.ClustersDirectory))
             {
                 using (var stream = new StreamReader(file))
@@ -43,11 +45,48 @@ namespace TSProcessor.CLI.Tasks.Forecast
                     clusters.Add(templateClusters);
                 }
             }
-            var results = SimpleForecaster.Forecast(templates, clusters, series, args.Error);
-            var (rmse, nonpred) = SimpleForecaster.CalculateRMSE(results, series);
+            logger.LogInformation("Clusters are read succesfully");
+            var options = new ProgressBarOptions
+            {
+                ForegroundColor = ConsoleColor.Yellow,
+                ForegroundColorDone = ConsoleColor.DarkGreen,
+                BackgroundColor = ConsoleColor.DarkGray,
+                BackgroundCharacter = '\u2593',
+                DisplayTimeInRealTime = false
+            };
+
+            // Temporary stub
+            Span<float> tmp = series.Skip(series.Length - 1000).ToArray();
+            var totalTicks = tmp.Length - 80 - args.ForecastringSteps;
+
+            IList<float> results;
+            using (var pbar = new ProgressBar(totalTicks, "Progress of forecasting", options))
+            {
+                SimpleForecaster.OnPointForecasted += () =>
+                {
+                    pbar.Tick();
+                };
+
+                results = SimpleForecaster.ForecastSeries(templates, clusters, tmp, args.Error, args.ForecastringSteps);
+                // TODO: unsubscribe event
+                // SimpleForecaster.OnPointForecasted -= 
+            }
+
+            var (rmse, nonpred) = MathExtended.CalculateRMSE(results, tmp.ToArray());
             logger.LogInformation("RMSE = {rmse}", rmse);
             logger.LogInformation("Non predicted points = {nonpred}", nonpred);
             writer.Write(results, DefaultParams.forecastPath);
+
+
+            // Temporary stub
+            //Span<float> tmp = series.Skip(series.Length - 1000).ToArray();
+
+            //var next = SimpleForecaster.ForecastPoint(templates, clusters, tmp, args.Error, 10);
+            //logger.LogInformation("Next point value = {next}", next);
+#if DEBUG
+            Console.ReadKey();
+#endif
+
             return 0;
         }        
     }

@@ -12,7 +12,9 @@ namespace TSProcessor.CLI.Tasks.Forecast
         public string SeriesFileName { get; set; }
         [Option('c', HelpText = "")]
         public string ClustersDirectory { get; set; }
-        [Option('e', Default = 0.01f)]
+        [Option('e', Default = 0.1f)]
         public float Error { get; set; }
+        [Option('f', Default = 10)]
+        public int ForecastringSteps { get; set; }
     }
 }
