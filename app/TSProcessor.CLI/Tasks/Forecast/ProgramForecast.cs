@@ -32,9 +32,10 @@ namespace TSProcessor.CLI.Tasks.Forecast
             {
                 series = ServiceStack.Text.JsonSerializer.DeserializeFromReader<float[]>(stream);
             }
+
+            logger.LogInformation("Reading clusters...");
             List<float[][]> clusters = new List<float[][]>();
             List<Template> templates = new List<Template>();
-            logger.LogInformation("Reading clusters...");
             foreach (var file in Directory.GetFiles(args.ClustersDirectory))
             {
                 using (var stream = new StreamReader(file))
@@ -46,6 +47,7 @@ namespace TSProcessor.CLI.Tasks.Forecast
                 }
             }
             logger.LogInformation("Clusters are read succesfully");
+
             var options = new ProgressBarOptions
             {
                 ForegroundColor = ConsoleColor.Yellow,
@@ -62,24 +64,22 @@ namespace TSProcessor.CLI.Tasks.Forecast
             IList<float> results;
             using (var pbar = new ProgressBar(totalTicks, "Progress of forecasting", options))
             {
-                SimpleForecaster.OnPointForecasted += () =>
+                void onPointForecasted()
                 {
                     pbar.Tick();
-                };
+                }
+
+                SimpleForecaster.OnPointForecasted += onPointForecasted;
 
                 results = SimpleForecaster.ForecastSeries(templates, clusters, tmp, args.Error, args.ForecastringSteps);
-                // TODO: unsubscribe event
-                // SimpleForecaster.OnPointForecasted -= 
+
+                SimpleForecaster.OnPointForecasted -= onPointForecasted;
             }
 
             var (rmse, nonpred) = MathExtended.CalculateRMSE(results, tmp.ToArray());
             logger.LogInformation("RMSE = {rmse}", rmse);
             logger.LogInformation("Non predicted points = {nonpred}", nonpred);
             writer.Write(results, DefaultParams.forecastPath);
-
-
-            // Temporary stub
-            //Span<float> tmp = series.Skip(series.Length - 1000).ToArray();
 
             //var next = SimpleForecaster.ForecastPoint(templates, clusters, tmp, args.Error, 10);
             //logger.LogInformation("Next point value = {next}", next);

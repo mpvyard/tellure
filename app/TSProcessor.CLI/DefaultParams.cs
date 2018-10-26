@@ -19,7 +19,10 @@ namespace TSProcessor.CLI
         public static readonly Vector3 Y0 = new Vector3(10, -1, 1);
 
         public static readonly string seriesPath
-            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "numbers.json");
+            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "learning.json");
+
+        public static readonly string testsPath
+            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "tests.json");
 
         public static readonly string paintPath
             = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "paint.json");
