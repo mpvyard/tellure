@@ -20,8 +20,10 @@ namespace TSProcessor.CLI.Tasks.Clusterize
         {
             opts.SeriesFileName = opts.SeriesFileName ?? DefaultParams.seriesPath;
             opts.ClustersDirectory = opts.ClustersDirectory ?? DefaultParams.clustersPath;
+            string centersDir = Path.Join(opts.ClustersDirectory, "centers");
+            string fullDir = Path.Join(opts.ClustersDirectory, "full");
 
-            if(!File.Exists(opts.SeriesFileName))
+            if (!File.Exists(opts.SeriesFileName))
             {
                 logger.LogError("File with series {series} doesn't exist", opts.SeriesFileName);
                 return 1;
@@ -31,6 +33,26 @@ namespace TSProcessor.CLI.Tasks.Clusterize
             {
                 logger.LogWarning("Directory {dir} doesn't exist, creating", opts.ClustersDirectory);
                 Directory.CreateDirectory(opts.ClustersDirectory);
+            }
+
+            if (!Directory.Exists(opts.ClustersDirectory))
+            {
+                logger.LogWarning("Directory {dir} doesn't exist, creating", opts.ClustersDirectory);
+                Directory.CreateDirectory(opts.ClustersDirectory);
+                Directory.CreateDirectory(fullDir);
+                Directory.CreateDirectory(centersDir);
+            }
+
+            if (!Directory.Exists(centersDir))
+            {
+                logger.LogWarning("Directory {dir} doesn't exist, creating", centersDir);
+                Directory.CreateDirectory(centersDir);
+            }
+
+            if (!Directory.Exists(fullDir))
+            {
+                logger.LogWarning("Directory {dir} doesn't exist, creating", fullDir);
+                Directory.CreateDirectory(fullDir);
             }
 
             fileWriter = writer;
@@ -83,11 +105,11 @@ namespace TSProcessor.CLI.Tasks.Clusterize
                 var clusters = Clusterize(vectors);
 
                 logger.LogInformation("Start writing results for {template} to file", stringTemplate);
-                var path = Path.Combine(clustersDir, $"{stringTemplate}.json");
+                var path = Path.Combine(clustersDir, "full", $"{stringTemplate}.json");
                 fileWriter.Write(clusters, path);
 
                 var centers = clusters.Select(cluster => cluster.Centr).ToList();
-                var pathCenters = Path.Combine(clustersDir, $"{stringTemplate}.centers.json");
+                var pathCenters = Path.Combine(clustersDir, "centers", $"{stringTemplate}.centers.json");
                 fileWriter.Write(centers, pathCenters);
                 logger.LogInformation("Writing finished for {template}", stringTemplate);
             });
@@ -105,11 +127,11 @@ namespace TSProcessor.CLI.Tasks.Clusterize
                 var clusters = Clusterize(vectors);
 
                 logger.LogInformation("Start writing results for {template} to file", stringTemplate);
-                var path = Path.Combine(clustersDir, $"{stringTemplate}.json");
+                var path = Path.Combine(clustersDir, "full", $"{stringTemplate}.json");
                 fileWriter.Write(clusters, path);
 
                 var centers = clusters.Select(cluster => cluster.Centr).ToList();
-                var pathCenters = Path.Combine(clustersDir, $"{stringTemplate}.centers.json");
+                var pathCenters = Path.Combine(clustersDir, "centers", $"{stringTemplate}.centers.json");
                 fileWriter.Write(centers, pathCenters);
                 logger.LogInformation("Writing finished for {template}", stringTemplate);
             });
