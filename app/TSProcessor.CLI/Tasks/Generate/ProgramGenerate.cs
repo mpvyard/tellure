@@ -50,59 +50,48 @@ namespace TSProcessor.CLI.Tasks.Generate
 
         private static void Get3dSequence(GenerateOptions opts, ILogger logger, FileWriter writer, IEnumerable<Vector3> sequence, IEnumerable<Vector3> testSequence)
         {
-            logger.LogInformation("Normalize generated series");
 
             if (opts.Normalize)
             {
+                logger.LogInformation("Normalize generated series");
+
                 var sec = sequence.Concat(testSequence);
                 sec = sec.Normalize();
                 sequence = sec.Take(sequence.Count());
                 testSequence = sec.Skip(sequence.Count());
             }
 
-            logger.LogDebug("Sequence: {sequence}",
-                ServiceStack.Text.CsvSerializer.SerializeToString(sequence));
-
-            logger.LogDebug("Sequence: {sequence}",
-                ServiceStack.Text.CsvSerializer.SerializeToString(testSequence));
-
-            logger.LogInformation("Writing sequence to file {file} started", opts.OutFile);
             writer.Write(sequence, opts.OutFile);
-            logger.LogInformation("Writing sequence to file {file} finished", opts.OutFile);
+            logger.LogDebug("Writing sequence to {file}", opts.OutFile);
+            logger.LogInformation("Writing sequence to file finished");
 
-            logger.LogInformation("Writing testing sequence to file {file} started", opts.OutTestsFile);
             writer.Write(testSequence, opts.OutTestsFile);
-            logger.LogInformation("Writing testing sequence to file {file} finished", opts.OutTestsFile);
+            logger.LogDebug("Writing testing sequence to {file}", opts.OutTestsFile);
+            logger.LogInformation("Writing testing sequence to file finished");
         }
 
         private static void Get1dSequence(GenerateOptions opts, ILogger logger, FileWriter writer, IEnumerable<Vector3> sequence, IEnumerable<Vector3> testSequence)
         {
-            logger.LogInformation("Normalize generated series");
-
             var sequenceX = sequence.Select(number => number.X);
             var testSequenceX = testSequence.Select(number => number.X);
 
             if (opts.Normalize)
             {
+                logger.LogInformation("Normalize generated series");
+
                 var sec = sequenceX.Concat(testSequenceX);
                 sec = sec.Normalize();
                 sequenceX = sec.Take(sequence.Count());
                 testSequenceX = sec.Skip(sequence.Count());
             }
 
-            logger.LogDebug("Sequence: {sequence}",
-                ServiceStack.Text.CsvSerializer.SerializeToString(sequenceX));
-
-            logger.LogDebug("Sequence: {sequence}",
-                ServiceStack.Text.CsvSerializer.SerializeToString(testSequence));
-
-            logger.LogInformation("Writing sequence to file {file} started", opts.OutFile);
             writer.Write(sequenceX, opts.OutFile);
-            logger.LogInformation("Writing sequence to file {file} finished", opts.OutFile);
+            logger.LogDebug("Writing sequence to {file}", opts.OutFile);
+            logger.LogInformation("Writing sequence to file finished");
 
-            logger.LogInformation("Writing testing sequence to file {file} started", opts.OutTestsFile);
             writer.Write(testSequenceX, opts.OutTestsFile);
-            logger.LogInformation("Writing testing sequence to file {file} finished", opts.OutTestsFile);
+            logger.LogDebug("Writing testing sequence to {file}", opts.OutTestsFile);
+            logger.LogInformation("Writing testing sequence to file finished");
         }
     }
 }
