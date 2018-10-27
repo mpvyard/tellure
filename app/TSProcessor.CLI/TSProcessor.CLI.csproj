@@ -10,6 +10,7 @@
     <Authors>Serge Matvienko, smatvienko@outlook.com</Authors>
     <Product>Tellure TSProcessor</Product>
     <RepositoryUrl>https://github.com/msvaillant/tellure</RepositoryUrl>
+    <Version>0.4.3</Version>
   </PropertyGroup>
   
   <ItemGroup>

@@ -14,7 +14,8 @@ namespace TSProcessor.CLI
 
         public const float generationStep = 0.05f;
         public const int skipCount = 3000;
-        public const int sequenceCount = 13500;//16500
+        public const int sequenceCount = 13500;
+        public const int testsCount = 1000;
 
         public static readonly Vector3 Y0 = new Vector3(10, -1, 1);
 

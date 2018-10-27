@@ -9,28 +9,38 @@ namespace TSProcessor.CLI.Tasks.Generate
 {
     static class Generator
     {
+        // TODO: rework code from using 1d and 3d methods to just one
         public static int Generate(GenerateOptions opts, ILogger logger, FileWriter writer)
         {
             //TODO: add checks of opts
             opts.OutFile = opts.OutFile ?? DefaultParams.seriesPath;
+            opts.OutTestsFile = opts.OutTestsFile ?? DefaultParams.testsPath;
 
             logger.LogInformation("Operation started...");
 
             logger.LogInformation("Generate time-series");
+            var rnd = new Random();
+            int distance = rnd.Next(opts.DataCount / 10);
 
             var generator = new TimeSeriesGenerator(opts.Sigma, opts.R, opts.B);
-            var sequence = generator.Generate(DefaultParams.Y0, opts.Step, opts.Skip + opts.Count);
+
+            var sequence = generator.Generate(DefaultParams.Y0, opts.Step, DefaultParams.skipCount + opts.DataCount);
+            sequence = sequence.Skip(DefaultParams.skipCount);
+
+            var testSequence = generator.Generate(DefaultParams.Y0, opts.Step,
+                DefaultParams.skipCount + opts.DataCount + distance + opts.TestsCount);
 
             if (opts.Dimentions == 1)
             {
-                Get1dSequence(opts, logger, writer, sequence);
+                Get1dSequence(opts, logger, writer, sequence, testSequence);
             }
 
             if (opts.Dimentions == 3)
             {
-                Get3dSequence(opts, logger, writer, sequence);
+                Get3dSequence(opts, logger, writer, sequence, testSequence);
             }
             //TODO: add write to MongoDb
+            logger.LogInformation("The distance between learning sequence and testing sequence = {distance}", distance);
             logger.LogInformation("Operation completed");
 #if DEBUG
             Console.ReadLine();
@@ -38,41 +48,61 @@ namespace TSProcessor.CLI.Tasks.Generate
             return 0;
         }
 
-        private static void Get3dSequence(GenerateOptions opts, ILogger logger, FileWriter writer, IEnumerable<Vector3> sequence)
+        private static void Get3dSequence(GenerateOptions opts, ILogger logger, FileWriter writer, IEnumerable<Vector3> sequence, IEnumerable<Vector3> testSequence)
         {
             logger.LogInformation("Normalize generated series");
 
             if (opts.Normalize)
             {
-                sequence = sequence.Normalize();
+                var sec = sequence.Concat(testSequence);
+                sec = sec.Normalize();
+                sequence = sec.Take(sequence.Count());
+                testSequence = sec.Skip(sequence.Count());
             }
-            sequence = sequence.Skip(opts.Skip);
 
             logger.LogDebug("Sequence: {sequence}",
                 ServiceStack.Text.CsvSerializer.SerializeToString(sequence));
 
-            logger.LogInformation("Writing to file {file} started", opts.OutFile);
+            logger.LogDebug("Sequence: {sequence}",
+                ServiceStack.Text.CsvSerializer.SerializeToString(testSequence));
+
+            logger.LogInformation("Writing sequence to file {file} started", opts.OutFile);
             writer.Write(sequence, opts.OutFile);
-            logger.LogInformation("Writing to file {file} finished", opts.OutFile);
+            logger.LogInformation("Writing sequence to file {file} finished", opts.OutFile);
+
+            logger.LogInformation("Writing testing sequence to file {file} started", opts.OutTestsFile);
+            writer.Write(testSequence, opts.OutTestsFile);
+            logger.LogInformation("Writing testing sequence to file {file} finished", opts.OutTestsFile);
         }
 
-        private static void Get1dSequence(GenerateOptions opts, ILogger logger, FileWriter writer, IEnumerable<Vector3> sequence)
+        private static void Get1dSequence(GenerateOptions opts, ILogger logger, FileWriter writer, IEnumerable<Vector3> sequence, IEnumerable<Vector3> testSequence)
         {
             logger.LogInformation("Normalize generated series");
 
             var sequenceX = sequence.Select(number => number.X);
+            var testSequenceX = testSequence.Select(number => number.X);
+
             if (opts.Normalize)
             {
-                sequenceX = sequenceX.Normalize();
+                var sec = sequenceX.Concat(testSequenceX);
+                sec = sec.Normalize();
+                sequenceX = sec.Take(sequence.Count());
+                testSequenceX = sec.Skip(sequence.Count());
             }
-            sequenceX = sequenceX.Skip(opts.Skip);
 
             logger.LogDebug("Sequence: {sequence}",
                 ServiceStack.Text.CsvSerializer.SerializeToString(sequenceX));
 
-            logger.LogInformation("Writing to file {file} started", opts.OutFile);
+            logger.LogDebug("Sequence: {sequence}",
+                ServiceStack.Text.CsvSerializer.SerializeToString(testSequence));
+
+            logger.LogInformation("Writing sequence to file {file} started", opts.OutFile);
             writer.Write(sequenceX, opts.OutFile);
-            logger.LogInformation("Writing to file {file} finished", opts.OutFile);
+            logger.LogInformation("Writing sequence to file {file} finished", opts.OutFile);
+
+            logger.LogInformation("Writing testing sequence to file {file} started", opts.OutTestsFile);
+            writer.Write(testSequenceX, opts.OutTestsFile);
+            logger.LogInformation("Writing testing sequence to file {file} finished", opts.OutTestsFile);
         }
     }
 }
