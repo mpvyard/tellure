@@ -6,7 +6,6 @@ using System.Text;
 namespace Tellure.Entities.Clusters
 {
     public abstract class GenericInitialCluster<TZVector, TCentr>
-        where TZVector : IZVector<TCentr>
     {
         private List<TZVector> zVectors;
         private IReadOnlyList<TCentr> centr;

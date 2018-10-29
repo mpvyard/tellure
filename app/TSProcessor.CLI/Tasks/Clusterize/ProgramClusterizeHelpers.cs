@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using Tellure.Algorithms;
 using Tellure.Entities;
 using Tellure.Entities.Clusters;
@@ -11,7 +12,7 @@ namespace TSProcessor.CLI.Tasks.Clusterize
     static partial class Clusterizer
     {
         [Obsolete]
-        private static void ClusterizeAll(IReadOnlyList<float> series, int[] from, int[] to, ILogger logger)
+        private static void ClusterizeAll(IReadOnlyList<Vector<float>> series, int[] from, int[] to, ILogger logger)
         {
             foreach (var template in Wishart.GenerateTemplateForWishart(from, to))
             {
@@ -29,13 +30,6 @@ namespace TSProcessor.CLI.Tasks.Clusterize
         private static IReadOnlyList<InitialCluster> Clusterize(IReadOnlyList<ZVector> zVectors)
         {
             WishartAlgor algor = new WishartAlgor(new WishartParams { H = 0.2, K = 11 });
-            var clusters = algor.Clusterize(zVectors);
-            return clusters;
-        }
-
-        private static IEnumerable<InitialCluster3d> Clusterize(IReadOnlyList<ZVector3d> zVectors)
-        {
-            WishartAlgor3d algor = new WishartAlgor3d(new WishartParams { H = 0.2, K = 11 });
             var clusters = algor.Clusterize(zVectors);
             return clusters;
         }
