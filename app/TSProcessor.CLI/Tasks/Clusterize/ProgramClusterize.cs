@@ -74,17 +74,13 @@ namespace TSProcessor.CLI.Tasks.Clusterize
             {
                 logger.LogInformation("Operation started...");
 
-                logger.LogInformation("Generate time-series");
-                TimeSeriesGenerator lr = new TimeSeriesGenerator(DefaultParams.sigma, DefaultParams.r, DefaultParams.b);
-                IEnumerable<Vector3> sequence = lr.Generate(DefaultParams.Y0, DefaultParams.generationStep, DefaultParams.skipCount + DefaultParams.sequenceCount)
-                    .Skip(DefaultParams.skipCount);
-                logger.LogInformation("Normalize generated series");
-                List<Vector3> series = SeriesNormalizer.Normalize(sequence).ToList();
-                //List<Vector3> series; - deserialization of vector3 is broken out
-                //using (var stream = new StreamReader(opts.SeriesFileName))
-                //{
-                //    series = ServiceStack.Text.JsonSerializer.DeserializeFromReader<List<Vector3>>(stream);
-                //}
+                List<float[]> arrSeries; // -deserialization of vector3 is broken out
+                using (var stream = new StreamReader(opts.SeriesFileName))
+                {
+                    arrSeries = ServiceStack.Text.JsonSerializer.DeserializeFromReader<List<float[]>>(stream);
+                }
+
+                var series = arrSeries.Select(x => new Vector3(x[0], x[1], x[2])).ToList();                 
                 logger.LogInformation("Start clusterization");
                 ClusterizeAllParallel(series, opts.From.ToArray(), opts.To.ToArray(), logger, opts.ClustersDirectory);
                 logger.LogInformation("Operation completed");
