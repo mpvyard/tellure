@@ -6,6 +6,7 @@ using System.Linq;
 using System.Numerics;
 using Tellure.Algorithms;
 using Tellure.Generator;
+using TSProcessor.CLI.IO;
 
 namespace TSProcessor.CLI.Tasks.Clusterize
 {
@@ -13,7 +14,7 @@ namespace TSProcessor.CLI.Tasks.Clusterize
     static partial class Clusterizer
     {
         private static FileWriter fileWriter;
-        public static int Clusterize(ClusterizationOptions opts, ILogger logger, FileWriter writer)
+        public static int Clusterize(ClusterizationOptions opts, ILogger logger, IFileReader<List<Vector4>> reader, FileWriter writer)
         {
             opts.SeriesFileName = opts.SeriesFileName ?? DefaultParams.seriesPath;
             opts.ClustersDirectory = opts.ClustersDirectory ?? DefaultParams.clustersPath;
@@ -54,19 +55,7 @@ namespace TSProcessor.CLI.Tasks.Clusterize
 
             fileWriter = writer;
 
-            List<Vector<float>> series;
-            //using (var stream = new StreamReader(opts.SeriesFileName))
-            //{
-            //    series = ServiceStack.Text.JsonSerializer.DeserializeFromReader<List<float>>(stream);
-            //}
-
-            List<float[]> arrSeries; 
-            using (var stream = new StreamReader(opts.SeriesFileName))
-            {
-                arrSeries = ServiceStack.Text.JsonSerializer.DeserializeFromReader<List<float[]>>(stream);
-            }
-
-            series = arrSeries.Select(x => new Vector<float>(x)).ToList();
+            IReadOnlyList<Vector4> series = reader.Read(opts.SeriesFileName);
 
             logger.LogInformation("Start clusterization");
             ClusterizeAllParallel(series, opts.From.ToArray(), opts.To.ToArray(), logger, opts.ClustersDirectory);
@@ -74,7 +63,7 @@ namespace TSProcessor.CLI.Tasks.Clusterize
             return 0;
         }
 
-        private static void ClusterizeAllParallel(IReadOnlyList<Vector<float>> series, int[] from, int[] to, ILogger logger, string clustersDir)
+        private static void ClusterizeAllParallel(IReadOnlyList<Vector4> series, int[] from, int[] to, ILogger logger, string clustersDir)
         {
             Wishart.GenerateTemplateForWishart(from, to).AsParallel().ForAll(template =>
             {

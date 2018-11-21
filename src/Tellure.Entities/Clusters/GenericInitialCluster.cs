@@ -88,4 +88,9 @@ namespace Tellure.Entities.Clusters
             return string.Join(ClusterFormat.ValueSeparator.ToString(), valuesStr);
         }
     }
+
+    internal static class ClusterFormat
+    {
+        public const char ValueSeparator = ';';
+    }
 }

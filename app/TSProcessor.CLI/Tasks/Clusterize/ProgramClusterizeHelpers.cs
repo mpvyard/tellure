@@ -12,7 +12,7 @@ namespace TSProcessor.CLI.Tasks.Clusterize
     static partial class Clusterizer
     {
         [Obsolete]
-        private static void ClusterizeAll(IReadOnlyList<Vector<float>> series, int[] from, int[] to, ILogger logger)
+        private static void ClusterizeAll(IReadOnlyList<Vector4> series, int[] from, int[] to, ILogger logger)
         {
             foreach (var template in Wishart.GenerateTemplateForWishart(from, to))
             {

@@ -8,7 +8,7 @@ namespace Tellure.Algorithms
 {
 	public static class ZVectorBuilder
 	{
-        public static IReadOnlyList<ZVector> Build(IReadOnlyList<Vector<float>> points, int[] step, int firstNumber)
+        public static IReadOnlyList<ZVector> Build(IReadOnlyList<Vector4> points, int[] step, int firstNumber)
         {
             int n = points.Count;
             int z = step.Length + 1;
@@ -19,7 +19,7 @@ namespace Tellure.Algorithms
             for (int i = 0; i < n; i++)
             {
                 k = i;
-                var cur = new List<Vector<float>>();
+                var cur = new List<Vector4>();
                 for (int j = 0; j < z && k < n; j++)
                 {
                     cur.Add(points[k]);
@@ -27,7 +27,7 @@ namespace Tellure.Algorithms
                 }
                 if (cur.Count == z)
                 {
-                    zVectors.Add(new ZVector(cur));
+                    zVectors.Add(new ZVector(cur, firstNumber++));
                 }
             }
 

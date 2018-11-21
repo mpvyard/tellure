@@ -9,6 +9,8 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
+using TSProcessor.CLI.IO;
 using TSProcessor.CLI.Tasks.Clusterize;
 using TSProcessor.CLI.Tasks.Forecast;
 using TSProcessor.CLI.Tasks.Generate;
@@ -24,13 +26,14 @@ namespace TSProcessor.CLI
             ServiceProvider serviceProvider = CreateServiceProvider();
             var logger = serviceProvider.GetService<ILogger<Program>>();
             var writer = serviceProvider.GetService<FileWriter>();
+            var listVector4Reader = serviceProvider.GetService<IFileReader<List<Vector4>>>();
 
             return Parser.Default.ParseArguments<NormalizeOptions, GenerateOptions, PaintOptions, ClusterizationOptions, ForecastOptions>(args)
                 .MapResult(
                 (GenerateOptions opts) => Generator.Generate(opts, logger, writer),
                 (NormalizeOptions opts) => Normalizer.Normalize(opts, logger),
                 (PaintOptions opts) => Painter.Paint(opts, writer, logger),
-                (ClusterizationOptions opts) => Clusterizer.Clusterize(opts, logger, writer),
+                (ClusterizationOptions opts) => Clusterizer.Clusterize(opts, logger, listVector4Reader, writer),
                 (ForecastOptions opts) => Forecaster.Forecast(opts, writer, logger),
                 errs => HandleParseError(errs, logger));
         }
@@ -51,6 +54,9 @@ namespace TSProcessor.CLI
             serviceCollection.AddTransient<FileWriter, FileWriter>();
             serviceCollection.AddTransient<Context, Context>();
             serviceCollection.AddTransient<Accelerator, CudaAccelerator>();
+            serviceCollection.AddTransient<IFileReader<float[]>, GenericFileReader<float[]>>();
+            serviceCollection.AddTransient<IFileReader<List<Vector4>>, FileReaderVector4>();
+            serviceCollection.AddTransient<IFileReader<List<Vector<float>>>, FileReaderVector>();
         }
 
         private static ServiceProvider CreateServiceProvider()

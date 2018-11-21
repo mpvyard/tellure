@@ -9,16 +9,19 @@ namespace Tellure.Entities
 {
 	public class ZVector
 	{
-		private readonly List<Vector<float>> list;//sequence has generated from templates 
+		private readonly List<Vector4> list;//sequence has generated from templates 
 
-		public IReadOnlyList<Vector<float>> List
+		public IReadOnlyList<Vector4> List
 		{
 			get { return list; }
 		}
 
-		public ZVector(List<Vector<float>> list)
+        public int Num { get; private set; }
+
+        public ZVector(List<Vector4> list, int num = -1)
 		{
 			this.list = list;
+            Num = num;
 		}
     }
 }

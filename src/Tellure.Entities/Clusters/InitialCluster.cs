@@ -5,16 +5,19 @@ using System.Numerics;
 
 namespace Tellure.Entities.Clusters
 {
-    public class InitialCluster : GenericInitialCluster<ZVector, Vector<float>>
+    public class InitialCluster : GenericInitialCluster<ZVector, Vector4>
     {
+        public InitialCluster()
+            :base(new ZVector(null)) { }
+
         public InitialCluster(ZVector zVector)
             : base(zVector)
         {
         }
 
-        protected override IReadOnlyList<Vector<float>> FindCentr()
+        protected override IReadOnlyList<Vector4> FindCentr()
         {
-            List<Vector<float>> res = ZVectors[0].List.ToList();
+            List<Vector4> res = ZVectors[0].List.ToList();
             //var res = ZVectors[0];
 
             for (int i = 1; i < ZVectors.Count; i++)
@@ -33,9 +36,4 @@ namespace Tellure.Entities.Clusters
             return res;
         }
     }
-
-	internal static class ClusterFormat
-	{
-		public const char ValueSeparator = ';';
-	}
 }
