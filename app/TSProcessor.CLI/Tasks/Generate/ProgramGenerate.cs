@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Tellure.Generator;
+using TSProcessor.CLI.IO;
 
 namespace TSProcessor.CLI.Tasks.Generate
 {

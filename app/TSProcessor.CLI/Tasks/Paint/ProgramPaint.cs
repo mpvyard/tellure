@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Tellure.Algorithms;
 using Tellure.Algorithms.Painting;
+using TSProcessor.CLI.IO;
 
 namespace TSProcessor.CLI.Tasks.Paint
 {

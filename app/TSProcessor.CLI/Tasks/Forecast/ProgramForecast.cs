@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using Tellure.Algorithms;
 using Tellure.Algorithms.Forecasting;
+using TSProcessor.CLI.IO;
 
 namespace TSProcessor.CLI.Tasks.Forecast
 {
