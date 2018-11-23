@@ -6,14 +6,13 @@
     <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
     <NoWin32Manifest>true</NoWin32Manifest>
 
-    <VersionPrefix>0.4.3</VersionPrefix>
+    <VersionPrefix>0.4.4</VersionPrefix>
     <Authors>Serge Matvienko, smatvienko@outlook.com</Authors>
     <Product>Tellure TSProcessor</Product>
     <RepositoryUrl>https://github.com/msvaillant/tellure</RepositoryUrl>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="ILGPU" Version="0.3.0" />
     <!--PackageReference Include="ILLink.Tasks" Version="0.1.5-preview-1461378" /-->
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.5"></PackageReference>
   </ItemGroup>

@@ -61,14 +61,11 @@ namespace TSProcessor.CLI.Tasks.Generate
                 testSequence = sec.Skip(sequence.Count());
             }
 
-            var arrSequence = sequence.Select(vec => new float[] { vec.X, vec.Y, vec.Z });
-            var arrTestSequence = testSequence.Select(vec => new float[] { vec.X, vec.Y, vec.Z });
-
-            writer.Write(arrSequence, opts.OutFile);
+            writer.Write(sequence, opts.OutFile);
             logger.LogDebug("Writing sequence to {file}", opts.OutFile);
             logger.LogInformation("Writing sequence to file finished");
 
-            writer.Write(arrTestSequence, opts.OutTestsFile);
+            writer.Write(testSequence, opts.OutTestsFile);
             logger.LogDebug("Writing testing sequence to {file}", opts.OutTestsFile);
             logger.LogInformation("Writing testing sequence to file finished");
         }

@@ -1,14 +1,11 @@
 ﻿using CommandLine;
-using ILGPU;
-using ILGPU.Runtime;
-using ILGPU.Runtime.Cuda;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using ServiceStack.Text;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Numerics;
 using TSProcessor.CLI.IO;
 using TSProcessor.CLI.Tasks.Clusterize;
@@ -26,7 +23,7 @@ namespace TSProcessor.CLI
             ServiceProvider serviceProvider = CreateServiceProvider();
             var logger = serviceProvider.GetService<ILogger<Program>>();
             var writer = serviceProvider.GetService<FileWriter>();
-            var listVector4Reader = serviceProvider.GetService<IFileReader<List<Vector4>>>();
+            var listVector4Reader = serviceProvider.GetService<FileReader>();
 
             return Parser.Default.ParseArguments<NormalizeOptions, GenerateOptions, PaintOptions, ClusterizationOptions, ForecastOptions>(args)
                 .MapResult(
@@ -46,17 +43,18 @@ namespace TSProcessor.CLI
                 .Build();
             serviceCollection.AddSingleton(configuration);
 
+            JsConfig<Vector3>.SerializeFn = JsConfigForVectors.Vector3Serializer;
+
+            JsConfig<Vector4>.SerializeFn = JsConfigForVectors.Vector4Serializer;
+            JsConfig<Vector4>.DeSerializeFn = JsConfigForVectors.Vector4Deserializer;
+
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
                 .CreateLogger();
 
             serviceCollection.AddLogging(logging => logging.AddSerilog());
             serviceCollection.AddTransient<FileWriter, FileWriter>();
-            serviceCollection.AddTransient<Context, Context>();
-            serviceCollection.AddTransient<Accelerator, CudaAccelerator>();
-            serviceCollection.AddTransient<IFileReader<float[]>, GenericFileReader<float[]>>();
-            serviceCollection.AddTransient<IFileReader<List<Vector4>>, FileReaderVector4>();
-            serviceCollection.AddTransient<IFileReader<List<Vector<float>>>, FileReaderVector>();
+            serviceCollection.AddTransient<FileReader, FileReader>();
         }
 
         private static ServiceProvider CreateServiceProvider()

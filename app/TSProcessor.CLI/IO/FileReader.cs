@@ -5,10 +5,15 @@ using System.Text;
 
 namespace TSProcessor.CLI.IO
 {
-    public sealed class GenericFileReader<T> : IFileReader<T>
+    sealed class FileReader
     {
-        public T Read(string fileName)
+        public T Read<T>(string fileName)
         {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                throw new ArgumentOutOfRangeException(nameof(fileName));
+            }
+
             T data;
             using (var stream = new StreamReader(fileName))
             {

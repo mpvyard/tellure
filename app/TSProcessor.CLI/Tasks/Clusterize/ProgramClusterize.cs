@@ -14,7 +14,7 @@ namespace TSProcessor.CLI.Tasks.Clusterize
     static partial class Clusterizer
     {
         private static FileWriter fileWriter;
-        public static int Clusterize(ClusterizationOptions opts, ILogger logger, IFileReader<List<Vector4>> reader, FileWriter writer)
+        public static int Clusterize(ClusterizationOptions opts, ILogger logger, FileReader reader, FileWriter writer)
         {
             opts.SeriesFileName = opts.SeriesFileName ?? DefaultParams.seriesPath;
             opts.ClustersDirectory = opts.ClustersDirectory ?? DefaultParams.clustersPath;
@@ -55,7 +55,7 @@ namespace TSProcessor.CLI.Tasks.Clusterize
 
             fileWriter = writer;
 
-            IReadOnlyList<Vector4> series = reader.Read(opts.SeriesFileName);
+            var series = reader.Read<Vector4[]>(opts.SeriesFileName);
 
             logger.LogInformation("Start clusterization");
             ClusterizeAllParallel(series, opts.From.ToArray(), opts.To.ToArray(), logger, opts.ClustersDirectory);

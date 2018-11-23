@@ -3,7 +3,7 @@ using System.IO;
 
 namespace TSProcessor.CLI.IO
 {
-    class FileWriter
+    sealed class FileWriter
     {
         public void Write<T>(T model, string file)
         {
@@ -20,14 +20,6 @@ namespace TSProcessor.CLI.IO
             using (var writer = new StreamWriter(file))
             {
                 ServiceStack.Text.JsonSerializer.SerializeToWriter(model, writer);
-            }
-        }
-
-        private void WriteToCsv<T>(T model, string file)
-        {
-            using (var writer = new StreamWriter(file))
-            {
-                ServiceStack.Text.CsvSerializer.SerializeToWriter(model, writer);
             }
         }
     }
